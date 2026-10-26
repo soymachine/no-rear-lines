@@ -67,7 +67,8 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const args = process.argv.slice(2), opt = (k, v) => { const i = args.indexOf('--' + k); return i < 0 ? v : args[i + 1]; };
   const n = +opt('n', 200), ds = opt('d', '15,30,50').split(',').map(Number), geos = opt('geo', 'frente,flanco,cruza').split(','), ocultos = opt('oculto', 'panzer4,sherman').split(',');
   const pc = (v) => `${Math.round(v * 100)}`.padStart(3) + ' %';
-  console.log(`casco oculto: puntería ×${REGLAS.casco.punteria}, impactos a la torreta, seto pegado a ≤ ${REGLAS.casco.pegado} casilla · ${n} semillas por caso`);
+  const C = REGLAS.casco;
+  console.log(`casco oculto: de los tiros que le darían, a la torreta ${C.cerca} a quemarropa → ${C.torreta} a ${C.hasta} casillas y más (el resto, al talud), seto pegado a ≤ ${C.pegado} casilla${C.parado ? ', solo parado' : ''} · ${n} semillas por caso`);
   console.log('oculto   geo     d   │ con la regla: gana oculto / otro / nadie, t, disparos │ sin ella: gana oculto / otro / nadie, t, disparos');
   for (const oculto of ocultos) for (const geo of geos) for (const d of ds) {
     const con = duelos({ oculto, d, geo, casco: true }, n), sin = duelos({ oculto, d, geo, casco: false }, n);

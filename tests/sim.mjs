@@ -98,6 +98,9 @@ const mapa = (filas, extra = {}) => ({ id: 'prueba', nombre: { es: 'Prueba', en:
   ok(!cascoOculto(m, c, { x: 0, y: 4.5 }) && !cascoOculto(m, { x: 8.5, y: 4.5 }, { x: 30, y: 4.5 }), 'desde atrás, o con el seto a dos casillas, sí');
   const con = duelos({ oculto: 'sherman', d: 30, geo: 'frente', casco: true }, 150), sin = duelos({ oculto: 'sherman', d: 30, geo: 'frente', casco: false }, 150);
   ok(con.oculto >= sin.oculto + 0.08, `duelo de frente a 30 casillas: el Sherman oculto gana el ${(con.oculto * 100).toFixed(0)} % (sin la regla, el ${(sin.oculto * 100).toFixed(0)} %)`);
+  // de lejos, el seto no hace más fácil de matar al Panzer IV (su torreta de 50 mm): a 50 casillas, de frente, gana lo mismo
+  const pzCon = duelos({ oculto: 'panzer4', d: 50, geo: 'frente', casco: true }, 150), pzSin = duelos({ oculto: 'panzer4', d: 50, geo: 'frente', casco: false }, 150);
+  ok(pzCon.oculto >= pzSin.oculto - 0.03, `duelo de frente a 50 casillas: el Panzer IV oculto gana el ${(pzCon.oculto * 100).toFixed(0)} % (sin la regla, el ${(pzSin.oculto * 100).toFixed(0)} %)`);
 }
 
 // el mapa de amenaza y la ruta cubierta: con un enemigo conocido al oeste que ve el campo abierto de abajo, una

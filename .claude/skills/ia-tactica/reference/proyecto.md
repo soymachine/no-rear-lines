@@ -20,6 +20,10 @@ Lo que es de este juego, y no del oficio.
   - las bajas (`baja`): herido o muerto según la letalidad, y el golpe a la moral de los suyos;
   - el carro (`carro`, `disparaCañon`, `impactoCarro`, `penetra`): gira sobre las orugas, la torreta sigue al blanco,
     cañón contra carros (perforante, lado por el ángulo, espesor / cos) y explosivo o coaxial contra infantería;
+  - **Al día (2026-10-26, cifras del game-designer)**: lo de abajo sobre «×0,6» y «todos los impactos a la torreta» es
+    la regla vieja. Ahora solo cuenta con el carro **parado**, la puntería no baja y, de los tiros que le darían, llegan
+    a la torreta del 85 % (a quemarropa) al 35 % (a 50 casillas o más); el resto se lo come el talud del seto (cañonazo
+    con `talud: true`). Cifras y medidas en `diseno-juego/reference/proyecto.md`, «El casco oculto».
   - el **casco oculto** (`cascoOculto`, 2026-10-26): un carro con un seto pegado (las casillas que pisa la línea hacia
     el tirador hasta `REGLAS.casco.pegado` = 1 casilla de su centro, sin la suya) solo enseña la torreta: todos los
     impactos van a ella y la puntería del cañón contra él ×`REGLAS.casco.punteria` (0,6). Los sucesos `cañonazo`,

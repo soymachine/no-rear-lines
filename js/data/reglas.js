@@ -35,11 +35,15 @@ export const REGLAS = {
     soldado: 1, carro: 3, despliegue: 0.6, avance: 0.6, rejilla: 4, lejos: 0.5, tope: 3,
     peso: { mover: 4, correr: 3, carro: 4 }, hueco: 2, huecoPeso: 4, cubiertas: ['mover'], cada: 30,
   },
-  // el casco oculto: un carro con una de estas baldosas pegada (a ≤ pegado casillas de su centro) entre él y quien le
-  // dispara solo enseña la torreta (más o menos el 40 % de su silueta de frente): los impactos van todos a la torreta y
-  // la puntería del cañón contra él se multiplica por punteria (provisional: el blanco es menos de la mitad, pero a 100–
-  // 200 m la dispersión del cañón es pequeña y no baja en proporción)
-  casco: { punteria: 0.6, pegado: 1, baldosas: ['seto'] },
+  // el casco oculto: un carro (parado, si parado) con una de estas baldosas pegada (a ≤ pegado casillas de su centro)
+  // entre él y quien le dispara solo enseña la torreta. A un carro a la vista, `torreta` de los impactos le van a la
+  // torreta (su parte de la silueta) y el resto al casco. Al oculto, de los tiros que le darían solo llega a la torreta
+  // `cerca` a quemarropa (se le apunta a ella y la dispersión es pequeña), que baja en línea hasta `torreta` a `hasta`
+  // casillas y más (de lejos la dispersión reparte los tiros por la silueta); el resto se lo come el talud del seto.
+  // Así el seto nunca hace a un carro más fácil de matar a distancia, ni siquiera al Panzer IV de torreta fina, y parado
+  // porque el casco oculto es una posición que se toma (meter el morro contra el talud), no un regalo del camino entre
+  // setos. Medido con tools/duelo.mjs (game-designer, 2026-10-26)
+  casco: { torreta: 0.35, cerca: 0.85, hasta: 50, pegado: 1, baldosas: ['seto'], parado: true },
   // el mando de la IA (js/sim/ia.js): cada cuántos pasos piensa, dónde busca sus setos (casillas por delante del
   // objetivo y separación entre escuadras), cuánto le importa que su posición de tiro se vea de lejos, y cada cuánto
   // puede rehacer la ruta de una escuadra que va de camino si cambia lo que sabe

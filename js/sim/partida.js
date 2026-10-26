@@ -342,13 +342,17 @@ function carro(p, c) {
 function disparaCañon(p, c, e, d) {
   const a = ARMA[c.def.cañon];
   c.espera = 1 / a.cadencia; c.disparo = p.t;
-  // un carro con el casco oculto tras un seto solo enseña la torreta: cuesta más darle
-  const oculto = e.tipo === 'carro' && cascoOculto(p.m, e, c);
-  const pa = a.precision * Math.exp(-d / a.caida) * (c.ruta.length ? 0.5 : 1) * (e.tipo === 'carro' && e.ruta.length ? 0.7 : 1) * (oculto ? R.casco.punteria : 1);
-  const acierta = p.rng.chance(pa);
-  // donde cae si falla: cerca del blanco
-  const x = acierta ? e.x : e.x + p.rng.float(-2, 2), y = acierta ? e.y : e.y + p.rng.float(-2, 2);
-  suceso(p, { tipo: 'cañonazo', de: c.id, arma: a.id, x0: c.x, y0: c.y, x1: x, y1: y, acierta, ...(oculto && { oculto }) });
+  // un carro parado con el casco oculto tras un seto solo enseña la torreta (REGLAS.casco)
+  const oculto = e.tipo === 'carro' && (!R.casco.parado || !e.ruta.length) && cascoOculto(p.m, e, c);
+  const pa = a.precision * Math.exp(-d / a.caida) * (c.ruta.length ? 0.5 : 1) * (e.tipo === 'carro' && e.ruta.length ? 0.7 : 1);
+  let acierta = p.rng.chance(pa), talud = false;
+  // de lo que daría a un carro a la vista, al oculto solo le llega lo que va a la torreta: de cerca casi todo (se le
+  // apunta a ella), de lejos su parte de la silueta; el resto se lo come el talud del seto
+  if (acierta && oculto) { const C = R.casco; acierta = p.rng.chance(C.cerca + (C.torreta - C.cerca) * Math.min(1, d / C.hasta)); talud = !acierta; }
+  // donde cae si falla: en el talud, delante del carro; si no, cerca del blanco
+  const hd = Math.hypot(c.x - e.x, c.y - e.y) || 1;
+  const x = acierta ? e.x : talud ? e.x + ((c.x - e.x) / hd) * 0.8 : e.x + p.rng.float(-2, 2), y = acierta ? e.y : talud ? e.y + ((c.y - e.y) / hd) * 0.8 : e.y + p.rng.float(-2, 2);
+  suceso(p, { tipo: 'cañonazo', de: c.id, arma: a.id, x0: c.x, y0: c.y, x1: x, y1: y, acierta, ...(oculto && { oculto }), ...(talud && { talud }) });
   if (e.tipo === 'carro') { if (acierta) impactoCarro(p, c, e, a, d, oculto); return; }
   // explosivo contra infantería
   suceso(p, { tipo: 'explosion', x, y, r: a.explosivo });
@@ -380,9 +384,9 @@ export function cascoOculto(m, e, desde) {
   }
   return false;
 }
-// el impacto en un carro: en la torreta (siempre con el casco oculto; si no, uno de cada tres) o en el casco
+// el impacto en un carro: en la torreta (siempre con el casco oculto; si no, REGLAS.casco.torreta) o en el casco
 function impactoCarro(p, c, e, a, d, oculto) {
-  e.torretaGolpe = oculto || p.rng.chance(0.35);
+  e.torretaGolpe = oculto || p.rng.chance(R.casco.torreta);
   const r = penetra(c, e, a, d);
   suceso(p, { tipo: r.atraviesa ? 'penetra' : 'rebote', de: c.id, a: e.id, ...r, torreta: e.torretaGolpe, ...(oculto && { oculto }) });
   if (r.atraviesa) { e.estado = 'destruido'; e.ruta = []; suceso(p, { tipo: 'destruido', id: e.id }); }
