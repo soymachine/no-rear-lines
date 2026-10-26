@@ -45,3 +45,9 @@ Las tomó el usuario en las dos primeras rondas de preguntas, la segunda despué
 bando, humo y trazadoras, todo con `raster.js` en hojas y ampliado en enteros. Admite los parámetros `?baldosa=`,
 `res=`, `x=`, `vista=escena|mapa|hojas` y `marcas=0`. Las capturas se hacen con
 `node prototipos/escala/captura.mjs <carpeta> "nombre|parámetros"` y salen idénticas cada vez.
+
+## Decisiones (tercera ronda, 2026-10-26)
+
+- **Ampliación fija ×2 y resolución de dibujo según la pantalla**: la mitad de la pantalla en cada eje (1920×1080 →
+  960×540, 1280×720 → 640×360, 2560×1440 → 1280×720). Con más pantalla se ve más mapa; las unidades miden siempre lo
+  mismo.

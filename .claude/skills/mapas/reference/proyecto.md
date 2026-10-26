@@ -21,3 +21,8 @@ _Vacío por ahora: aún no hay mapas._ Aquí irá lo que es de este juego, y no 
 
   Un objetivo en el cruce de la granja, dos rutas hacia él (los setos o el camino) y un despliegue en cada extremo.
 - Teatro: Normandía, verano de 1944 (bocage).
+
+## Decisiones (tercera ronda, 2026-10-26)
+
+- **Los mapas son rejillas de texto** en un archivo de datos (una letra por casilla, con su leyenda), dibujadas por el
+  map-designer. El editor visual, más adelante, en el admin.

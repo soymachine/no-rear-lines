@@ -21,3 +21,9 @@ _Vacío por ahora: aún no hay juego._ Aquí irá lo que es de este juego, y no 
 - **El tiempo, siempre a 1:1.** El menú detiene la partida, pero con él abierto no se dan órdenes.
 - **El humo, también de la IA**: las escuadras lo lanzan solas para retirarse o cruzar al descubierto bajo fuego.
 - **Marcador de bando** bajo cada unidad, que se puede quitar.
+
+## Decisiones (tercera ronda, 2026-10-26)
+
+- La resolución de dibujo se adapta a la pantalla con ×2 fijo: una pantalla más grande ve más mapa.
+- El prototipo empieza por la simulación en Node con pruebas deterministas, y luego un dibujo mínimo.
+- Los mapas, rejillas de texto en datos; el editor visual, más adelante.

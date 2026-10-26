@@ -27,3 +27,8 @@ _Vacío por ahora: aún no hay simulación._ Aquí irá lo que es de este juego,
   pausa táctica.
 - **Granadas de humo**: las lanza el jugador con la orden HUMO, y también la IA por su cuenta en lo obvio, cuando una
   escuadra se retira o tiene que cruzar al descubierto bajo fuego.
+
+## Decisiones (tercera ronda, 2026-10-26)
+
+- **El prototipo empieza por la simulación en Node**: mapa, unidades, pasos fijos, línea de visión, supresión y moral,
+  con pruebas deterministas. Enseguida, un dibujo mínimo encima para verla moverse.
