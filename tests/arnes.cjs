@@ -13,7 +13,7 @@
 //   · cuando está listo para jugar, window.__nrl.listo === true. Lo demás de window.__nrl (la simulación, pausar,
 //     avanzar pasos, dar órdenes) lo define el juego y lo usan las pruebas. Para grabar (tools/video.mjs):
 //     window.__nrl.fotograma(dt, guion) avanza dt segundos como un fotograma real (acumulador, pasos, dibujo con su
-//     alfa y marcador) y devuelve los sucesos; el bucle propio de la página no debe dibujar encima (se para su rAF).
+//     alfa y marcador) y devuelve los sucesos; desde entonces el bucle propio de la página ya no dibuja encima.
 //   · las ventanas abiertas llevan la clase .modal y se cierran con Esc.
 // La regla de las pruebas: comparar con lo que exporta el juego (sus tablas de datos, sus constantes), no con cifras o
 // listas copiadas a mano, que caducan con el primer ajuste de equilibrio.

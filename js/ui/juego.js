@@ -294,12 +294,14 @@ function fin(s) {
 
 // ---------------------------------------------------------------- el bucle
 function unPaso() { for (const l of ias) ia(p, l); paso(p); procesa(p.sucesos); }
-let acc = 0, antes = performance.now();
+let acc = 0, antes = performance.now(), grabando = false; // (grabando: el reloj y el dibujo los lleva __nrl.fotograma)
+const alfa = () => (p.fin ? 1 : acc / DT); // acabada la partida ya no hay paso siguiente: alfa no pasa de 1
 function bucle(ahora) {
   const dt = Math.min(0.25, (ahora - antes) / 1000); antes = ahora;
+  if (grabando) { requestAnimationFrame(bucle); return; }
   if (!detenido && !PRUEBA) { reloj += dt; acc += dt; while (acc >= DT && !p.fin) { unPaso(); acc -= DT; } }
   mueveCam(dt);
-  dibuja(PRUEBA ? 1 : acc / DT);
+  dibuja(PRUEBA ? 1 : alfa());
   pintaHud();
   requestAnimationFrame(bucle);
 }
@@ -314,13 +316,13 @@ window.__nrl = {
   avanza(n, guion = false) { for (let i = 0; i < n && !p.fin; i++) { reloj += DT; if (guion) aplicaGuion(p); unPaso(); } dibuja(1); pintaHud(); return { t: p.t, fin: p.fin }; },
   // un fotograma de verdad de dt segundos (para grabar: tools/video.mjs): el reloj y el acumulador avanzan dt, corren los
   // pasos que toquen (con el guion si guion) y se dibuja interpolado (alfa = lo que sobra de paso) con el marcador.
-  // Devuelve los sucesos de esos pasos. Con ?prueba=1 el bucle de la página no avanza el tiempo, pero sí dibuja (alfa 1):
-  // quien grabe tiene que pararlo (tools/video.mjs deja requestAnimationFrame sin efecto).
+  // Devuelve los sucesos de esos pasos. Desde la primera llamada, el bucle de la página ya no dibuja: no pinta encima.
   fotograma(dt, guion = false) {
     const sucesos = [];
+    grabando = true;
     reloj += dt; acc += dt;
     while (acc >= DT && !p.fin) { if (guion) aplicaGuion(p); unPaso(); sucesos.push(...p.sucesos); acc -= DT; }
-    dibuja(p.fin ? 1 : acc / DT); pintaHud();
+    dibuja(alfa()); pintaHud();
     return { t: p.t, fin: p.fin, sucesos };
   },
   ordena: (o) => ordena(p, o),

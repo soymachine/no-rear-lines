@@ -5,9 +5,9 @@
 // vaya lento. Hace de cámara: sigue la acción (los disparos y explosiones recientes, suavizado) y cambia de vista de vez en
 // cuando (normal casi siempre, dos tramos de cerca y un vistazo al táctico). ffmpeg lo junta en un .mp4 (H.264, yuv420p).
 // Al final comprueba que grabar no cambió la partida: la huella de la página es la de la misma batalla jugada en Node.
-// Uso: node tools/video.mjs [--segundos 120] [--desde 0] [--semilla N] [--escenario granja] [--salida /tmp/x.mp4]
+// Uso: node tools/video.mjs [--segundos 120] [--desde 50] [--semilla N] [--escenario granja] [--salida /tmp/x.mp4]
 //        [--fps 30] [--tamaño 1280x720] [--crf 20]
-//   --desde: segundos de partida que se juegan antes de empezar a grabar (la granja empieza con ~70 s de avance)
+//   --desde: segundos de partida que se juegan sin grabar (50: la granja empieza con ~70 s de avance; 0, la partida entera)
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -23,7 +23,7 @@ const H = require('../tests/arnes.cjs');
 const FFMPEG = process.env.FFMPEG || '/usr/bin/ffmpeg';
 
 const args = process.argv.slice(2), opt = (k, d) => { const i = args.indexOf('--' + k); return i < 0 ? d : args[i + 1]; };
-const segundos = +opt('segundos', 120), desde = +opt('desde', 0), fps = +opt('fps', 30), crf = +opt('crf', 20);
+const segundos = +opt('segundos', 120), desde = +opt('desde', 50), fps = +opt('fps', 30), crf = +opt('crf', 20);
 const escenario = opt('escenario', 'granja');
 const semilla = opt('semilla', null) != null ? +opt('semilla') >>> 0 : H.semilla ?? 1;
 const [ancho, alto] = String(opt('tamaño', opt('tamano', '1280x720'))).split('x').map(Number);
@@ -114,7 +114,6 @@ function director({ plan, guion }) {
 const t0 = Date.now();
 const b = await H.pw.chromium.launch();
 const ctx = await b.newContext({ viewport: { width: ancho, height: alto } });
-await ctx.addInitScript(() => { window.requestAnimationFrame = () => 0; }); // el reloj lo lleva la grabación, no la página
 const p = await ctx.newPage();
 const errs = [];
 p.on('pageerror', (e) => errs.push(e.message));
