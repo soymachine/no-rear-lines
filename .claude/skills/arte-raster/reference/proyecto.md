@@ -1,6 +1,21 @@
 # El arte de Sin Retaguardia (mapa del proyecto)
 
-_Vacío por ahora: aún no hay arte._ Aquí irá lo que es de este juego, y no del oficio:
+## Dónde vive cada dibujo (prototipo, 2026-10-26)
+
+- `js/arte/comun.js`: `T` (8 px por casilla), la paleta `C`, los colores de cada bando (`BANDO`: uniforme, casco y su
+  marcador), el dibujo de cada carro por su id de datos (`DIBUJO_CARRO`), los colores de estado de la interfaz
+  (`ESTADO`) y las utilidades (`giro`, `pinta`, `silueta`, `oscuro`).
+- `js/arte/terreno.js`: `pintaTerreno(m)` pinta el mapa entero una vez (baldosas, setos, árboles, casas, sombras);
+  `marcaCrater` pinta encima lo que queda; `COLOR_TACTICO` para el mapa táctico.
+- `js/arte/tropas.js`: `hojasTropas()`: soldados de cada bando (pie, tierra, caído; 8 direcciones; caja `S` = 10 px) y
+  carros (casco entero y roto en 16 direcciones, torreta en 32; caja `B` = 32 px). `fila(ángulo, n)`.
+- `js/arte/efectos.js`: `hojasEfectos()`: humo, fogonazos y la explosión en 4 fotogramas (`TIEMPOS_EXPLOSION`).
+- `js/ui/juego.js` los copia en cada fotograma (y dibuja trazadoras, polvo y el humo de los carros que arden).
+- Las capturas del juego: `node tests/juego.cjs` (con `NRL_CAPTURAS=carpeta`). La página `arte.html` que piden
+  `captura.mjs` y `captura-anim.mjs` está por hacer.
+- Pendiente del arte del prototipo: los ciclos de andar y arrastrarse, disparar, lanzar y caer (hoy, poses fijas).
+
+Lo demás que irá aquí:
 
 - la vista (cenital o tres cuartos), el tamaño de un soldado y de una baldosa en píxeles, la resolución de dibujo y la
   escala;

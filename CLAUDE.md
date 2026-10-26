@@ -10,7 +10,8 @@ La guerrilla no tiene frente: el enemigo puede estar detrás de cualquier seto.
 - **En el navegador**: HTML, módulos ES y canvas, **sin dependencias ni compilación**. Se sirve la carpeta tal cual.
 - **Todo el arte es pixel art dibujado en código** (`js/ui/raster.js`): sin imágenes.
 - **Estado**: prototipo. Hay agentes, skills y herramientas (traídos de La Misión Topolev: `ORIGEN-TOPOLEV.md`), el
-  mapa de la granja (`js/data/mapas/`) y la simulación en Node (`js/sim/`), sin dibujo todavía. El prototipo: un mapa
+  mapa de la granja (`js/data/mapas/`), la simulación (`js/sim/`) y el juego en pantalla (`index.html`, `js/ui/juego.js`,
+  `js/arte/`). El prototipo: un mapa
   hecho a mano con pocas baldosas, dos escuadras y un carro por bando, tiempo real sin pausa, línea de visión, moral,
   supresión y sonido.
 

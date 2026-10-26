@@ -5,6 +5,12 @@
 import { BALDOSAS, CLASES } from '../js/data/baldosas.js';
 import { MAPAS } from '../js/data/mapas/index.js';
 import { cargaMapa } from '../js/sim/mapa.js';
+import { ARMAS, ARMA, CAMPOS_ARMA } from '../js/data/armas.js';
+import { ESCUADRAS, CARROS, ESCUADRA, CARRO } from '../js/data/unidades.js';
+import { ESCENARIOS } from '../js/data/escenarios.js';
+import { MAPA } from '../js/data/mapas/index.js';
+import { TEXTOS } from '../js/data/textos.js';
+import { BANDO, DIBUJO_CARRO } from '../js/arte/comun.js';
 
 let fallos = 0;
 const ok = (c, msg) => { console.log(`${c ? '  ✓' : '  ✗'} ${msg}`); if (!c) fallos++; };
@@ -60,5 +66,43 @@ for (const def of MAPAS) {
     }
   }
 }
+// las armas, las escuadras y los carros
+ok(unico(ARMAS, 'id'), 'armas: id sin repetir');
+for (const a of ARMAS) {
+  const falta = CAMPOS_ARMA.filter((k) => !(a[k] > 0));
+  if (!a.nombre || !a.nombre.es || !a.nombre.en) falta.push('nombre es/en');
+  if (a.tipo === 'cañon' && !(Array.isArray(a.penetracion) && a.explosivo > 0)) falta.push('penetracion/explosivo');
+  ok(!falta.length, `arma ${a.id}${falta.length ? ': falta ' + falta.join(', ') : ''}`);
+}
+for (const e of ESCUADRAS) {
+  const falta = [];
+  if (!e.nombre || !e.nombre.es || !e.nombre.en) falta.push('nombre es/en');
+  if (!BANDO[e.lado]) falta.push(`colores del bando ${e.lado} (js/arte/comun.js)`);
+  if (!e.soldados.length || e.soldados[0].puesto !== 'jefe') falta.push('soldados, con el jefe primero');
+  for (const so of e.soldados) if (!ARMA[so.arma]) falta.push(`arma ${so.arma}`);
+  ok(!falta.length, `escuadra ${e.id}${falta.length ? ': falta ' + falta.join(', ') : ''}`);
+}
+for (const c of CARROS) {
+  const falta = [];
+  if (!c.nombre || !c.nombre.es || !c.nombre.en) falta.push('nombre es/en');
+  if (!ARMA[c.cañon] || !ARMA[c.coaxial]) falta.push('cañón o coaxial');
+  for (const parte of ['casco', 'torreta']) for (const lado of ['frente', 'lado', 'trasera']) if (!(c.blindaje[parte][lado] > 0)) falta.push(`blindaje ${parte}.${lado}`);
+  if (!DIBUJO_CARRO[c.id]) falta.push('su dibujo (js/arte/comun.js DIBUJO_CARRO)');
+  ok(!falta.length, `carro ${c.id}${falta.length ? ': falta ' + falta.join(', ') : ''}`);
+}
+// los escenarios
+for (const e of ESCENARIOS) {
+  const falta = [];
+  if (!MAPA[e.mapa]) falta.push(`mapa ${e.mapa}`);
+  if (!e.nombre?.es || !e.nombre?.en || !e.descripcion?.es || !e.descripcion?.en) falta.push('nombre y descripción es/en');
+  for (const f of e.fuerzas) { for (const q of f.escuadras || []) if (!ESCUADRA[q.tipo]) falta.push(`escuadra ${q.tipo}`); for (const q of f.carros || []) if (!CARRO[q.tipo]) falta.push(`carro ${q.tipo}`); }
+  if (!e.fuerzas.some((f) => f.lado === e.jugador)) falta.push('el bando del jugador');
+  ok(!falta.length, `escenario ${e.id}${falta.length ? ': falta ' + falta.join(', ') : ''}`);
+}
+// los textos de la interfaz, en los dos idiomas
+const sinIdioma = [];
+const recorre = (o, at) => { if (o && typeof o === 'object' && ('es' in o || 'en' in o)) { if (!o.es || !o.en) sinIdioma.push(at); return; } for (const [k, v] of Object.entries(o)) recorre(v, `${at}.${k}`); };
+recorre(TEXTOS, 'TEXTOS');
+ok(!sinIdioma.length, `textos en los dos idiomas${sinIdioma.length ? ': faltan ' + sinIdioma.join(', ') : ''}`);
 console.log(fallos ? `✗ ${fallos} fallo(s)` : '✓ todo bien');
 process.exit(fallos ? 1 : 0);

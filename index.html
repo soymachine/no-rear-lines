@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sin Retaguardia</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #050302; color: #d8d0b0; font: 13px/1.35 monospace; }
+  #pantalla { display: block; image-rendering: pixelated; cursor: crosshair; }
+  #hud { position: fixed; left: 8px; top: 6px; right: 8px; text-shadow: 0 1px 0 #000; pointer-events: none; }
+  #ficha { position: fixed; left: 8px; bottom: 8px; text-shadow: 0 1px 0 #000; pointer-events: none; }
+  #avisos { position: fixed; right: 8px; bottom: 8px; text-align: right; text-shadow: 0 1px 0 #000; pointer-events: none; }
+  #menu { position: fixed; display: flex; flex-direction: column; background: #1a1610ee; border: 1px solid #6b5a34; }
+  #menu button { font: inherit; color: #f4ecda; background: none; border: 0; padding: 4px 14px; text-align: left; cursor: pointer; }
+  #menu button:hover { background: #4a3d22; }
+  #fin, #detenido { position: fixed; left: 50%; top: 40%; transform: translate(-50%, -50%); padding: 14px 24px; background: #1a1610ee; border: 1px solid #6b5a34; font-size: 18px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<canvas id="pantalla"></canvas>
+<div id="hud"></div>
+<div id="ficha"></div>
+<div id="avisos"></div>
+<div id="menu" hidden></div>
+<div id="detenido" hidden>Partida detenida · Esc para seguir</div>
+<div id="fin" hidden></div>
+<script type="module" src="./js/ui/juego.js"></script>
+</body>
+</html>

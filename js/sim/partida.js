@@ -77,7 +77,8 @@ export function paso(p) {
 // ---------------------------------------------------------------- órdenes y obediencia
 function cumple(p, o) {
   if (o.carro != null) {
-    const c = p.porId[o.carro];
+    // el carro por su id, o el primero de un bando ('us')
+    const c = typeof o.carro === 'string' ? p.unidades.find((u) => u.tipo === 'carro' && u.lado === o.carro) : p.porId[o.carro];
     if (!c || c.estado !== 'forma') return;
     if (o.tipo === 'alto') c.ruta = [];
     else { const r = ruta(p.m, Math.floor(c.x), Math.floor(c.y), ...(andableCerca(p.m, o.x, o.y, 'carro') || [Math.floor(c.x), Math.floor(c.y)]), 'carro'); c.ruta = r ? suaviza(p.m, Math.floor(c.x), Math.floor(c.y), r, 'carro') : []; }

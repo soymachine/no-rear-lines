@@ -24,9 +24,11 @@ Tu oficio tiene tres partes:
 
 - `js/data/`: las tablas con id (baldosas, armas, unidades, reglas, mapas). `js/sim/`: la simulación, sin DOM (mapa,
   rutas, vista, partida, ia). `js/ui/raster.js` y `js/util/rng.js`: el motor de dibujo y el azar con semilla.
-  `prototipos/escala/`: la prueba visual de escala (no es el juego).
+  `js/arte/`: las hojas (terreno, tropas, efectos). `js/ui/juego.js`: el bucle (paso fijo y dibujo interpolado), la
+  cámara, las vistas, el mando y el marcador; `index.html` lo carga. `prototipos/escala/`: la prueba visual de escala.
 - Lo que se genera solo: `js/version.js` (el gancho).
-- Las pruebas: `tests/datos.mjs` (datos completos), `tests/sim.mjs` (simulación); `tools/batalla.mjs` juega una.
+- Las pruebas: `tests/datos.mjs` (datos completos), `tests/sim.mjs` (simulación), `tests/juego.cjs` (el juego en el
+  navegador, con capturas); `tools/batalla.mjs` juega una.
 - Las decisiones: CLAUDE.md y el `reference/proyecto.md` de cada skill. Aún no hay ADR.
 
 Hasta entonces mandan las reglas de arquitectura de `CLAUDE.md`:
