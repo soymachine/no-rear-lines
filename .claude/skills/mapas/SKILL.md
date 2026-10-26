@@ -65,11 +65,12 @@ Todo se comprueba antes y después de cambiar: cifras y capturas, fuera del repo
 
 ## Herramientas
 
-Pendientes: están por escribir. Cuando haya mapas, hacen falta:
-- un **medidor sin navegador** que cargue el mapa y dé las cifras de `diseno-niveles.md` (rutas, abierto, vista
-  larga, zonas muertas, terreno de carros, distancia entre despliegues), con un volcado del mapa en texto para leerlo;
-- una **captura** del mapa entero, con y sin unidades, de día y de noche, para mirarla con Read;
-- una **tabla de baldosas** generada de los datos, en `reference/proyecto.md`.
+- `scripts/mide-mapa.mjs <id|todos> [--texto archivo] [--baldosas]`: mide un mapa sin navegador con las cifras de
+  `diseno-niveles.md` (rutas a pie y en carro de cada despliegue al objetivo, otra ruta, abierto, vista larga, zona
+  muerta, terreno de carros, distancia de contacto), con un volcado en letras para leerlo. Se importa también
+  (`mide`, `costes`) para pruebas propias.
+- La captura del mapa con su arte, por ahora con la prueba de escala (`reference/proyecto.md`).
+- `tests/datos.mjs` comprueba que las baldosas y los mapas están completos.
 
 ## Lo aprendido
 

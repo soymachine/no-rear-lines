@@ -3,7 +3,8 @@
 // tamaño de la baldosa y el de las unidades. Todo sale de raster.js, se pinta una vez en hojas (OffscreenCanvas) y se
 // amplía ×N entero sin suavizar, como en el juego.
 // Parámetros (?…): baldosa=8 (px por baldosa de 4 m) · res=960x540 (resolución de dibujo) · x=N (aumento; por defecto,
-// el mayor entero que cabe) · vista=escena|mapa|hojas · marcas=0 (sin marcador de bando) · semilla=1944
+// el mayor entero que cabe) · vista=escena|mapa|hojas · marcas=0 (sin marcador de bando) · semilla=1944 ·
+// mapa=<id> (en vez del bocage generado, un mapa de datos de js/data/mapas/, como el del prototipo: mapa=granja)
 import { model, rasterize, box, ell, cap, poly, fuse, sEll, sCap, hash, hex, mix } from '../../js/ui/raster.js';
 import { RNG } from '../../js/util/rng.js';
 
@@ -47,7 +48,8 @@ function silueta(cv) { const s = new OffscreenCanvas(cv.width, cv.height), g = s
 const px = (box_, W, L) => lienzo(rasterize(L, { W, box: box_ }));
 
 // ---------------------------------------------------------------- el mapa: 250 × 250 baldosas de 4 m (1 km)
-const MW = 250, MH = 250, CAMPO = 0, SETO = 1, CAMINO = 2, BOSQUE = 3, CASA = 4;
+const DATOS = Q.get('mapa') ? (await import('../../js/data/mapas/index.js')).MAPA[Q.get('mapa')] : null;
+const MW = DATOS ? DATOS.ancho : 250, MH = DATOS ? DATOS.alto : 250, CAMPO = 0, SETO = 1, CAMINO = 2, BOSQUE = 3, CASA = 4;
 const map = new Uint8Array(MW * MH), arbolSeto = new Uint8Array(MW * MH);
 const rng = new RNG(SEM);
 const en = (x, y) => x >= 0 && y >= 0 && x < MW && y < MH;
@@ -71,7 +73,7 @@ const set = (x, y, t) => { if (en(x, y)) map[y * MW + x] = t; };
 })(0, 0, MW, MH);
 for (let i = 0; i < MW * MH; i++) if (map[i] === SETO && rng.chance(0.16)) arbolSeto[i] = 1;
 // caminos con setos a los lados (los caminos hundidos del bocage)
-const caminoY = (x) => Math.round(124 + 7 * Math.sin(x / 37) + 3 * Math.sin(x / 13));
+let caminoY = (x) => Math.round(124 + 7 * Math.sin(x / 37) + 3 * Math.sin(x / 13));
 const caminoX = (y) => Math.round(116 + 5 * Math.sin(y / 29));
 for (let x = 0; x < MW; x++) { const y = caminoY(x); set(x, y, CAMINO); set(x, y + 1, CAMINO); }
 for (let y = 0; y < MH; y++) { const x = caminoX(y); set(x, y, CAMINO); set(x + 1, y, CAMINO); }
@@ -82,7 +84,7 @@ for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
 }
 // el cruce y la granja (el objetivo), y un pueblo al este
 const casas = [];
-const cx = caminoX(124), cy = caminoY(cx);
+let cx = caminoX(124), cy = caminoY(cx);
 const despeja = (x0, y0, x1, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (at(x, y) !== CAMINO) set(x, y, CAMPO); };
 const casa = (x, y, w, h) => { casas.push({ x, y, w, h, teja: hash(x, y) > 0.55 }); for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) set(i, j, CASA); };
 despeja(cx + 3, cy - 15, cx + 18, cy - 2);
@@ -93,6 +95,17 @@ for (let x = 160; x < 205; x += 8) {
   const y = caminoY(x);
   despeja(x - 1, y - 7, x + 6, y - 1); despeja(x - 1, y + 2, x + 6, y + 8);
   casa(x, y - 5, 4, 3); if (x % 16) casa(x + 1, y + 3, 3, 4);
+}
+
+// un mapa de datos en lugar del generado: la rejilla de texto, sus casas y el cruce en el centro de la escena
+if (DATOS) {
+  const { cargaMapa } = await import('../../js/sim/mapa.js');
+  const md = cargaMapa(DATOS), A = { campo: CAMPO, seto: SETO, camino: CAMINO, casa: CASA, bosque: BOSQUE };
+  for (let i = 0; i < MW * MH; i++) { const b = md.baldosa(i % MW, Math.floor(i / MW)); map[i] = A[b.id]; arbolSeto[i] = map[i] === SETO && hash(i, 7) < 0.16 ? 1 : 0; }
+  casas.length = 0;
+  for (const c of md.casas) casas.push({ ...c, teja: hash(c.x, c.y) > 0.55 });
+  cx = 62; cy = 34;
+  caminoY = (x) => { for (let y = cy - 6; y <= cy + 6; y++) if (at(x, y) === CAMINO) return y; return cy; };
 }
 
 // ---------------------------------------------------------------- hojas: baldosas, setos, árboles, casas
@@ -230,11 +243,11 @@ escuadra('us', 'tierra', m2(-62, 22), 0.05, CUÑA);
 escuadra('us', 'pie', enCamino(-80), 0, COLUMNA.map(([x, y]) => [x, y + 2]));
 escuadra('de', 'tierra', m2(34, -26), Math.PI, [[0, 0], [0, 6], [0, -6], [3, 12], [3, -12]]);
 escuadra('de', 'pie', m2(48, -16), Math.PI * 0.9, [[0, 0], [-4, 5], [-4, -5]]);
-const mg = m2(14, 16); escuadra('de', 'tierra', mg, Math.PI * 1.05, [[0, 0], [-2, 3]]);
+const mg = DATOS ? m2(26, 8) : m2(14, 16); escuadra('de', 'tierra', mg, Math.PI * 1.05, [[0, 0], [-2, 3]]);
 unidades.push({ tipo: 'carro', carro: 'sherman', ...enCamino(-38), a: 0, ta: -0.35, dispara: true });
 unidades.push({ tipo: 'carro', carro: 'panzer', ...m2(55, -80), a: Math.PI * 0.8, ta: Math.PI });
 const humo = m2(-16, 25), crater = m2(-18, -12);
-const trazadoras = [0, 1, 2].map((i) => ({ de: m2(14, 16), a: m2(-58 + i * 4, 20 - i * 3), t: 0.25 + i * 0.3 }));
+const trazadoras = [0, 1, 2].map((i) => ({ de: mg, a: m2(-58 + i * 4, 20 - i * 3), t: 0.25 + i * 0.3 }));
 
 // ---------------------------------------------------------------- dibujar
 const back = new OffscreenCanvas(RW, RH), g = back.getContext('2d');

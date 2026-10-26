@@ -116,7 +116,7 @@ ellos está en las referencias de `arte-raster`:
 
 - **Scripts que leían el juego de allí y se rehacen cuando haya algo que medir aquí**:
   - `sonido/banco.mjs` y `sonido/sintetiza.mjs`;
-  - `mapas/mide-mapa.mjs`, `captura-mapa.mjs` y `tabla-casillas.mjs`;
+  - `mapas/captura-mapa.mjs` (`mide-mapa.mjs` ya está rehecho, y `--baldosas` hace lo de `tabla-casillas.mjs`);
   - `guion/paridad.mjs`, `historia.mjs` y `lineas.mjs`. El escáner de literales de `lib.mjs` se puede reutilizar.
 - **No tienen sentido aquí**: `mapas/salidas-plano.mjs`, porque no hay plano fijo, y `tinta-letras.mjs`, porque no
   hay letras.
