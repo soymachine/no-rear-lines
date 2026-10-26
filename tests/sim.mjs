@@ -1,8 +1,10 @@
 // La simulación, sin navegador: determinismo, obediencia, la regla del seto, la supresión de una ametralladora sobre
-// una escuadra que cruza al descubierto, el blindaje de los carros, el humo y una batalla entera en la granja.
+// una escuadra que cruza al descubierto, el blindaje de los carros, el humo, el mapa de amenaza y la ruta cubierta, el
+// carro de la IA (escolta y emboscada) y una batalla entera en la granja.
 // Uso: node tests/sim.mjs
 import { creaPartida, paso, ordena, huella, penetra } from '../js/sim/partida.js';
 import { ia } from '../js/sim/ia.js';
+import { fuentesAmenaza, mapaAmenaza } from '../js/sim/amenaza.js';
 import { seVe } from '../js/sim/vista.js';
 import { cargaMapa } from '../js/sim/mapa.js';
 import { GRANJA } from '../js/data/mapas/granja.js';
@@ -83,6 +85,68 @@ const mapa = (filas, extra = {}) => ({ id: 'prueba', nombre: { es: 'Prueba', en:
   ok(lado.atraviesa && lado.lado === 'lado', `de lado atraviesa (${lado.pen} mm contra ${lado.espesor})`);
   const sesgo = penetra(sh, { ...pz, rumbo: Math.PI + 0.85 }, ARMA.m3_75, 100); // el flanco, a unos 40° del proyectil
   ok(sesgo.lado === 'lado' && sesgo.espesor >= CARRO.panzer4.blindaje.casco.lado * 1.25, `un flanco sesgado cuenta más espesor (${sesgo.espesor} mm frente a ${CARRO.panzer4.blindaje.casco.lado})`);
+}
+
+// el mapa de amenaza y la ruta cubierta: con un enemigo conocido al oeste que ve el campo abierto de abajo, una
+// escuadra que va de este a oeste por ese campo, con MOVER cubierto, da la vuelta por detrás del seto largo (arriba) y
+// solo baja al final; sin cubierto, va derecha por el campo
+{
+  const filas = Array.from({ length: 24 }, (_, y) => (y === 8 ? '.'.repeat(6) + '#'.repeat(40) + '.'.repeat(14) : y < 8 ? '.'.repeat(6) + '#' + '.'.repeat(53) : '.'.repeat(60)));
+  const corre = (cubierta) => {
+    const p = creaPartida({ mapa: mapa(filas), semilla: 5, fuerzas: [{ lado: 'us', escuadras: [{ tipo: 'us_fusileros', x: 2, y: 16 }] }, { lado: 'de', escuadras: [{ tipo: 'de_gruppe', x: 52, y: 14 }] }] });
+    p.contactos.de.set(0, { x: 2.5, y: 16.5, t: 0, ahora: false }); // un contacto viejo: el jefe americano, al oeste
+    p.amenaza.de = mapaAmenaza(p.m, fuentesAmenaza(p, 'de'));
+    ordena(p, { tipo: 'mover', escuadra: 'de1', x: 12, y: 13, cubierta });
+    paso(p);
+    // a lo largo de cada ruta (cada media casilla): qué parte está a la vista y qué parte va por detrás del seto
+    const a = p.amenaza.de, us = p.unidades.filter((u) => u.lado === 'de');
+    let vistas = 0, total = 0, arriba = 0;
+    for (const u of us) {
+      let [cx, cy] = [u.x - 0.5, u.y - 0.5], n = 0, n8 = 0;
+      for (const [x, y] of u.ruta) {
+        const k = Math.max(1, Math.ceil(Math.hypot(x - cx, y - cy) * 2));
+        for (let i = 1; i <= k; i++) { const sx = Math.round(cx + ((x - cx) * i) / k), sy = Math.round(cy + ((y - cy) * i) / k); n++; if (sy < 8) n8++; if (a[sy * p.m.w + sx] > 0) vistas++; }
+        [cx, cy] = [x, y];
+      }
+      total += n; if (n8 >= n * 0.5) arriba++;
+    }
+    return { vistas: vistas / total, arriba };
+  };
+  const p0 = creaPartida({ mapa: mapa(filas), semilla: 5, fuerzas: [{ lado: 'us', escuadras: [] }, { lado: 'de', escuadras: [] }] });
+  p0.contactos.de = new Map(); // sin contactos: el despliegue del otro bando (x 0–3)
+  const a0 = mapaAmenaza(p0.m, fuentesAmenaza(p0, 'de')), w = p0.m.w;
+  ok(a0[16 * w + 40] > 0 && a0[4 * w + 40] === 0, 'la amenaza: el campo abierto a la vista del despliegue enemigo, sí; detrás del seto largo, no');
+  ok(a0[4 * w + 7] > 0 && a0[4 * w + 9] === 0, 'la regla del seto: lo pegado al otro lado de un seto se ve; dos casillas más allá, no');
+  const sin = corre(false), con = corre(true);
+  ok(con.vistas < 0.35 && sin.vistas > 0.8, `con la ruta cubierta, ${(con.vistas * 100).toFixed(0)} % de la ruta a la vista (sin ella, ${(sin.vistas * 100).toFixed(0)} %)`);
+  ok(con.arriba >= 8 && sin.arriba === 0, `con la ruta cubierta, ${con.arriba} de 10 van sobre todo por detrás del seto (sin ella, ${sin.arriba})`);
+}
+
+// el carro de la IA: sin escolta de infantería no sale a emboscar (espera detrás del objetivo); con ella, se emboscan
+// junto a un seto o una casa, fuera del camino, y no se queda parado en el camino en toda la batalla
+{
+  const o = GRANJA.objetivos[0];
+  const solo = creaPartida({ mapa: GRANJA, semilla: 1, fuerzas: [FUERZAS[0], { ...FUERZAS[1], escuadras: [] }] });
+  for (let i = 0; i < 600; i++) { ia(solo, 'de'); paso(solo); }
+  const pz = solo.unidades.find((u) => u.tipo === 'carro' && u.lado === 'de');
+  ok(pz.x > o.x && solo.iaPlan.de.carro[pz.id].va === 'reserva', `sin escolta, el Panzer espera detrás de la granja (${pz.x.toFixed(0)}, ${pz.y.toFixed(0)})`);
+  let enCamino = 0, emb = null, escoltado = true;
+  for (const s of [1, 2, 3]) {
+    const p = creaPartida({ mapa: GRANJA, semilla: s, fuerzas: FUERZAS });
+    for (let i = 0; i < 3000 && !p.fin; i++) {
+      for (const o2 of ORDENES[p.t] || []) ordena(p, o2);
+      ia(p, 'de'); paso(p);
+      const c = p.unidades.find((u) => u.tipo === 'carro' && u.lado === 'de'), pc = p.iaPlan.de.carro[c.id];
+      if (p.t > 20 && c.estado === 'forma' && !c.ruta.length && p.m.baldosa(Math.floor(c.x), Math.floor(c.y)).id === 'camino') enCamino++;
+      emb = pc.emb;
+      // parado en la emboscada: tiene una escuadra en condiciones a menos de 1,5 × escolta (o se va en ≤ 3 s)
+      if (p.t % 30 === 29 && c.estado === 'forma' && !c.ruta.length && Math.floor(c.x) === emb.x && Math.floor(c.y) === emb.y && pc.va === 'reserva') escoltado = false;
+    }
+  }
+  const junto = [-1, 0, 1].some((j) => [-1, 0, 1].some((i) => (i || j) && GRANJA.filas[emb.y + j][emb.x + i].match(/[#C]/)));
+  ok(enCamino === 0, `el Panzer no se para en el camino (${enCamino / 10} s parado en él en tres batallas, tras recibir su orden)`);
+  ok(junto && GRANJA.filas[emb.y][emb.x] !== '=', `su emboscada, (${emb.x}, ${emb.y}), está junto a un seto o una casa y fuera del camino`);
+  ok(escoltado, 'parado en la emboscada, siempre con escolta');
 }
 
 // una batalla entera en la granja: acaba, sin errores, y deprisa

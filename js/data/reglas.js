@@ -24,4 +24,24 @@ export const REGLAS = {
   // bajas: de un impacto, ¿herido o muerto? lo dice la letalidad del arma
   // victoria
   victoria: { tiempo: 900, roto: 0.6 },
+  // el mapa de amenaza (js/sim/amenaza.js) y la ruta cubierta: lo que pesa cada fuente (cada contacto; sin contactos,
+  // cada punto del despliegue enemigo, y siempre cada punto de su llegada esperada hasta `avance` de su largo, uno cada
+  // `rejilla` casillas), cuánto cae a la distancia máxima (lejos), el tope por casilla, cuánto encarece una casilla a
+  // la vista (por unidad de amenaza) la ruta de cada orden y hasta dónde se corre el hueco de cada soldado en la
+  // formación buscando la casilla menos vista (hueco casillas; huecoPeso casillas² por unidad de amenaza)
+  amenaza: {
+    soldado: 1, carro: 3, despliegue: 0.6, avance: 0.6, rejilla: 4, lejos: 0.5, tope: 3,
+    peso: { mover: 4, correr: 3, carro: 4 }, hueco: 2, huecoPeso: 4,
+  },
+  // el mando de la IA (js/sim/ia.js): cada cuántos pasos piensa, dónde busca sus setos (casillas por delante del
+  // objetivo y separación entre escuadras), cuánto le importa que su posición de tiro se vea de lejos, y cada cuánto
+  // puede rehacer la ruta de una escuadra que va de camino si cambia lo que sabe
+  ia: {
+    cada: 30, delante: 10, separa: 14, exponeTiro: 12, replanea: 100,
+    // el carro: busca dónde emboscar a menos de `radio` del objetivo, tirando a `tiro` [mín, máx] casillas sobre la
+    // llegada que espera del carro enemigo (de flanco vale más: flanco), sin que se le vea de lejos (expone) y junto a
+    // un seto o una casa, sin pasar de `adelante` casillas por delante del objetivo; espera `atras` casillas detrás
+    // del objetivo hasta que tenga una escuadra a menos de `escolta`
+    carro: { radio: 14, adelante: 6, tiro: [4, 40], flanco: 0.6, expone: 0.5, lejos: 0.01, escolta: 12, atras: 8 },
+  },
 };

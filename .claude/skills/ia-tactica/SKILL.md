@@ -87,3 +87,16 @@ Todo fuera del repo: registros, capturas y tablas de métricas, en el scratchpad
 
 (Añade aquí, con fecha, lo que descubras del comportamiento de las unidades que le sirva al siguiente. Lo que sea de
 este proyecto, en `reference/proyecto.md`.)
+
+- 2026-10-26 · Con un coste de exposición, el suavizado «tirar de la cuerda» que solo mira el coste del terreno de los
+  extremos deshace la ruta cubierta (cruza en recta el campo a la vista). La recta tiene que costar como mucho lo que
+  el trozo de ruta que salta.
+- 2026-10-26 · El mapa de amenaza solo con contactos llega tarde: el defensor ya ha cruzado lo expuesto cuando ve al
+  enemigo. Añadir las fuentes de la **llegada esperada** (rutas del despliegue enemigo al objetivo, sacadas del mapa)
+  bajó la exposición en ruta de 1,6 % a 0,7 % sin trampa.
+- 2026-10-26 · Una emboscada de carro tiene que apuntar al **primer punto** por donde asomará el enemigo, no al centro
+  de lo que ve: con la torreta lenta (14°/s), apuntar 50° de más perdía el duelo (de 3/7 a 9/10 ganados).
+- 2026-10-26 · Al repartir posiciones entre escuadras, ordénalas por dónde están a lo ancho del frente: por índice
+  se cruzan y atraviesan el campo la una delante de la otra.
+- 2026-10-26 · El shadowcasting no sabe la regla del seto: lo pegado a la fuente se quita de lo opaco, y lo de detrás
+  de un seto iluminado se comprueba con `seVe` (si no, los setos vistos de refilón hacen visible la fila de detrás).

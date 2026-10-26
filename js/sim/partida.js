@@ -7,6 +7,8 @@
 // fuerzas: [{ lado, escuadras: [{ tipo, x, y }], carros: [{ tipo, x, y, rumbo }] }]
 // órdenes: { tipo: 'mover'|'correr'|'esconderse'|'retirada'|'humo'|'alto', escuadra | carro: id, x, y }. Entran al
 // principio del paso siguiente; cada soldado decide si la cumple según su estado (obediencia filtrada por la moral).
+// Con cubierta: true, la ruta pesa lo que se ve desde el enemigo (p.amenaza[lado], el mapa de amenaza que deja la IA
+// del bando: amenaza.js); con mira, el carro, al llegar, encara el casco y la torreta hacia ese rumbo.
 import { RNG } from '../util/rng.js';
 import { ARMA } from '../data/armas.js';
 import { ESCUADRA, CARRO } from '../data/unidades.js';
@@ -28,7 +30,7 @@ const LINEA = [[0, 0], [0, -2], [0, 2], [0, -4], [0, 4], [0, -6], [0, 6], [0, -8
 export function creaPartida({ mapa, semilla = 1, fuerzas }) {
   const p = {
     m: cargaMapa(mapa), def: mapa, semilla, rng: new RNG(semilla), t: 0, unidades: [], porId: {}, escuadras: [],
-    contactos: { us: new Map(), de: new Map() }, humo: [], lanzamientos: [], cola: [], sucesos: [], fin: null,
+    contactos: { us: new Map(), de: new Map() }, amenaza: { us: null, de: null }, humo: [], lanzamientos: [], cola: [], sucesos: [], fin: null,
   };
   let n = 0;
   const pon = (u) => { u.id = n++; p.unidades.push(u); p.porId[u.id] = u; return u; };
@@ -80,8 +82,13 @@ function cumple(p, o) {
     // el carro por su id, o el primero de un bando ('us')
     const c = typeof o.carro === 'string' ? p.unidades.find((u) => u.tipo === 'carro' && u.lado === o.carro) : p.porId[o.carro];
     if (!c || c.estado !== 'forma') return;
+    c.mira = o.mira ?? null;
     if (o.tipo === 'alto') c.ruta = [];
-    else { const r = ruta(p.m, Math.floor(c.x), Math.floor(c.y), ...(andableCerca(p.m, o.x, o.y, 'carro') || [Math.floor(c.x), Math.floor(c.y)]), 'carro'); c.ruta = r ? suaviza(p.m, Math.floor(c.x), Math.floor(c.y), r, 'carro') : []; }
+    else {
+      const [ex, pe] = rutaCubierta(p, c.lado, o, 'carro'), ax = Math.floor(c.x), ay = Math.floor(c.y);
+      const r = ruta(p.m, ax, ay, ...(andableCerca(p.m, o.x, o.y, 'carro') || [ax, ay]), 'carro', ex, pe);
+      c.ruta = r ? suaviza(p.m, ax, ay, r, 'carro', ex, pe) : [];
+    }
     suceso(p, { tipo: 'orden', carro: c.id, orden: o.tipo, cumplen: 1, total: 1, motivo: null });
     return;
   }
@@ -95,6 +102,7 @@ function cumple(p, o) {
   // los huecos de cada uno en el destino: cuña hacia donde va (línea si es para defender)
   const cx = us.reduce((s, u) => s + u.x, 0) / (us.length || 1), cy = us.reduce((s, u) => s + u.y, 0) / (us.length || 1);
   const dir = ang(cx, cy, o.x, o.y), F = o.formacion === 'linea' ? LINEA : CUÑA, c = Math.cos(dir), s = Math.sin(dir);
+  const [ex, pe] = rutaCubierta(p, esc.lado, o, o.tipo);
   us.forEach((u, i) => {
     const r = disposicion(p, u, o, jefe);
     if (!r.cumple) { motivos[r.motivo] = (motivos[r.motivo] || 0) + 1; if (o.tipo !== 'alto') u.ruta = []; return; }
@@ -105,14 +113,32 @@ function cumple(p, o) {
     let tx = o.x, ty = o.y;
     if (o.tipo === 'retirada') { const z = p.def.despliegues[u.lado]; tx = z.x + z.w / 2; ty = z.y + z.h / 2; }
     const [ox, oy] = F[i % F.length];
-    const dest = andableCerca(p.m, tx + ox * c - oy * s, ty + ox * s + oy * c, 'pie') || andableCerca(p.m, tx, ty, 'pie');
-    const rr = dest && ruta(p.m, Math.floor(u.x), Math.floor(u.y), dest[0], dest[1], 'pie');
-    u.ruta = rr ? suaviza(p.m, Math.floor(u.x), Math.floor(u.y), rr, 'pie') : [];
+    let dest = andableCerca(p.m, tx + ox * c - oy * s, ty + ox * s + oy * c, 'pie') || andableCerca(p.m, tx, ty, 'pie');
+    if (dest && ex) dest = huecoCubierto(p, dest, ex);
+    const rr = dest && ruta(p.m, Math.floor(u.x), Math.floor(u.y), dest[0], dest[1], 'pie', ex, pe);
+    u.ruta = rr ? suaviza(p.m, Math.floor(u.x), Math.floor(u.y), rr, 'pie', ex, pe) : [];
     u.modo = o.tipo === 'correr' || o.tipo === 'retirada' ? 'correr' : 'andar';
     u.rumboFinal = o.mira != null ? o.mira : dir;
   });
   const motivo = Object.entries(motivos).sort((a, b) => b[1] - a[1])[0];
   suceso(p, { tipo: 'orden', escuadra: esc.id, orden: o.tipo, cumplen, total: us.length, motivo: motivo ? motivo[0] : null });
+}
+// la ruta cubierta: el mapa de amenaza del bando y lo que pesa para esta orden (REGLAS.amenaza.peso), o nada
+function rutaCubierta(p, lado, o, clase) {
+  const a = o.cubierta && p.amenaza[lado], pe = a && R.amenaza.peso[clase];
+  return pe ? [a, pe] : [null, 1];
+}
+// con la ruta cubierta, el hueco se corre a la casilla andable menos vista de alrededor (sin meterse en lo que tapa)
+function huecoCubierto(p, [hx, hy], ex) {
+  const A = R.amenaza;
+  let best = [hx, hy], bd = A.huecoPeso * ex[hy * p.m.w + hx];
+  for (let j = -A.hueco; j <= A.hueco; j++) for (let i = -A.hueco; i <= A.hueco; i++) {
+    const x = hx + i, y = hy + j;
+    if (!p.m.dentro(x, y) || p.m.coste(x, y, 'pie') === Infinity || p.m.tapa(x, y)) continue;
+    const d = i * i + j * j + A.huecoPeso * ex[y * p.m.w + x];
+    if (d < bd) { bd = d; best = [x, y]; }
+  }
+  return best;
 }
 // ¿cumple este soldado la orden? Retirarse, esconderse y parar casi siempre; avanzar depende de su estado
 function disposicion(p, u, o, jefe) {
@@ -282,6 +308,8 @@ function carro(p, c) {
       if (dd <= v) { c.x = cx; c.y = cy; c.ruta.shift(); } else { c.x += Math.cos(c.rumbo) * v; c.y += Math.sin(c.rumbo) * v; }
     }
   }
+  // parado y con un rumbo pedido (mira): el casco, de frente hacia él
+  if (!c.ruta.length && c.mira != null) { const giro = (d.giroCasco * Math.PI / 180) * DT; c.rumbo += Math.max(-giro, Math.min(giro, difAng(c.rumbo, c.mira))); }
   // blanco: un carro enemigo que se ve primero; si no, la infantería más cercana que se ve
   const C = p.contactos[c.lado];
   let best = null, bd = Infinity;
@@ -293,6 +321,8 @@ function carro(p, c) {
   }
   c.blanco = best ? best.id : null;
   c.espera -= DT; c.esperaCoax -= DT;
+  // sin blanco, la torreta espera apuntada hacia donde se espera al enemigo
+  if (!best && c.mira != null) { const giro = (d.giroTorreta * Math.PI / 180) * DT; c.torreta += Math.max(-giro, Math.min(giro, difAng(c.torreta, c.mira))); }
   if (!best) return;
   const quiere = ang(c.x, c.y, best.x, best.y), df = difAng(c.torreta, quiere), giro = (d.giroTorreta * Math.PI / 180) * DT;
   c.torreta += Math.max(-giro, Math.min(giro, df));
