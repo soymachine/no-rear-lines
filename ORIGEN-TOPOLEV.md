@@ -57,4 +57,74 @@ se separan: el oficio va en `SKILL.md` y el mapa del proyecto en `reference/proy
 
 ## Qué se ha traído
 
-(Se completa al final del trabajo de arranque.)
+### Tal cual
+
+| Aquí | De allí | Notas |
+|---|---|---|
+| `.claude/skills/improve-codebase-architecture`, `codebase-design`, `grilling`, `domain-modeling`, `ORIGEN-mattpocock.md` | lo mismo | de Matt Pocock, licencia MIT |
+| `js/ui/raster.js`, `js/util/rng.js` | lo mismo | |
+| `js/sim/fov.js` | `js/exp/fov.js` | otra carpeta, mismo contenido. Su `VIEW_K` (1,8) era para casillas más altas que anchas: pasa a 1 cuando la simulación lo use |
+| `eslint.config.js`, `tools/version.mjs` | lo mismo | |
+| `.githooks/pre-commit` | el de la rama principal | sin el paso de la precarga |
+| `.claude/skills/arte-raster/scripts/compara.py`, `reference/raster-api.md` | lo mismo | la API, sin los nombres de los dibujos de allí |
+
+### Adaptado
+
+- **Los seis agentes** (`.claude/agents/`): el oficio y el método se quedan; lo de Topolev se va; cada uno tiene «El
+  proyecto en breve» por rellenar. De «Lo aprendido» se quedan solo las líneas que valen para cualquier proyecto (el
+  detalle está en el mensaje del commit del paso 3).
+- **Las skills de oficio**: `SKILL.md` con el oficio y `reference/proyecto.md` vacío para el mapa del proyecto.
+  - `arte-raster`, entera. `captura.mjs` mira una página `arte.html` (el contrato está en su cabecera).
+    `captura-disparo.mjs` pasa a ser `captura-anim.mjs`: una lámina con una fila por dirección y los fotogramas en
+    función del tiempo. Se amplía con `hojas.md`, `animacion.md` y `baldosas.md`. Las paletas de allí
+    (`paletas.md`) y los disparos en ASCII (`disparos.md`) se van; su oficio (colores reservados, tiempos de una
+    ráfaga, dirección legible en las ocho) pasa a `SKILL.md` y a `animacion.md`.
+  - `sonido`: el oficio, reescrito para tiempo real. `mide-sonido.mjs` y `comun.mjs` miden archivos sueltos o un banco
+    opcional, sin el banco de pago ni `soundkeys.js`.
+  - `mapas`: la composición con baldosas y el diseño de niveles de una batalla táctica. `generacion.md`, sin el juego
+    de allí.
+  - `diseno-juego`: el criterio para tiempo real, `marco.md` y la plantilla del informe (`informe.md`, que allí estaba
+    en `partida-simulada`).
+  - `guion`: el oficio para gritos, órdenes, fichas e informes. `traduccion.md` con el mecanismo que funcionó y el
+    glosario vacío.
+- **`tests/arnes.cjs` y `tests/todas.mjs`**: con `NRL_URL` y `NRL_SEMILLA`; `empezar()` y `cerrarVentanas()` con un
+  contrato nuevo (`index.html?semilla=&escenario=`, `window.__nrl.listo`).
+- **CLAUDE.md**, nuevo, con el flujo de las notas de prueba de allí.
+
+### Nuevo
+
+- El agente `tactical-ai` y su skill `ia-tactica` (rutas, formación, moral, supresión, obediencia, carros).
+- `ORIGEN-TOPOLEV.md` (este archivo), `notas/notas.md` vacío y `package.json` mínimo (`"type": "module"`).
+
+### Mirado como referencia, sin copiar
+
+`js/ui/weaponsprite2.js`, `js/ui/itemsprite.js`, `js/render/dither.js` y `js/ui/artworker.js`. Lo que se aprendió de
+ellos está en las referencias de `arte-raster`:
+- de `dither.js`: los materiales como funciones de (i, j, variante), la máscara de bordes abiertos para la luz del
+  borde, la fase de la trama, la caché con tope y las variantes por hash;
+- de `artworker.js`: el mismo código en el worker y en la página, los búferes transferibles y la carga perezosa;
+- de `itemsprite.js` y `weaponsprite2.js`: una receta por id con piezas prestadas de un módulo base, la familia
+  elegida por los datos y la caché por id y variante.
+
+### No se ha traído
+
+- `sounds/pro/`: audio de pago con licencia solo para Topolev. Tampoco el resto de `sounds/`.
+- El código del juego: `js/exp`, `js/core`, `js/data` y `js/render/ascii.js`.
+- La skill `partida-simulada` y su bot: el bot de playtest se rehará para tiempo real.
+
+## Pendiente
+
+- **Scripts que leían el juego de allí y se rehacen cuando haya algo que medir aquí**:
+  - `sonido/banco.mjs` y `sonido/sintetiza.mjs`;
+  - `mapas/mide-mapa.mjs`, `captura-mapa.mjs` y `tabla-casillas.mjs`;
+  - `guion/paridad.mjs`, `historia.mjs` y `lineas.mjs`. El escáner de literales de `lib.mjs` se puede reutilizar.
+- **No tienen sentido aquí**: `mapas/salidas-plano.mjs`, porque no hay plano fijo, y `tinta-letras.mjs`, porque no
+  hay letras.
+- **Las páginas que piden los contratos**: `arte.html`, para `captura.mjs` y `captura-anim.mjs`, e `index.html`, para
+  el arnés.
+- **Lo que la página de planificación de allí marcaba como «adaptar» y no entraba en este arranque**:
+  - `js/audio.js` y `js/soundbank.js`: síntesis de reserva y banco por claves;
+  - `js/i18n/tx.js`: la traducción por el texto español;
+  - admin → NOTAS (`js/admin/notas.js`) y admin → AGENTES IA (`tools/agentes.mjs`, con su paso en el gancho);
+  - `tools/precarga.mjs` y su paso en el gancho, cuando haya `index.html` con muchos módulos.
+- **`rng.js`**: los `rng` y `vrng` que exporta salen sin semilla (`Math.random`). La simulación no los usa (CLAUDE.md).
