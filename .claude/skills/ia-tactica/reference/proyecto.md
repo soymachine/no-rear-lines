@@ -1,14 +1,47 @@
 # La IA de Sin Retaguardia (mapa del proyecto)
 
-_Vacío por ahora: aún no hay simulación._ Aquí irá lo que es de este juego, y no del oficio:
+Lo que es de este juego, y no del oficio.
 
-- dónde vive cada sistema (rutas, formación, visión y contactos, supresión, moral, órdenes y obediencia, puntería,
-  escuadra, mando del bando, carros) y sus tablas de datos con sus cifras;
-- el paso de la simulación (cuántos por segundo), cada cuánto piensa cada nivel y el presupuesto por paso;
-- los motivos de las decisiones (sus códigos) y cómo los enseña la interfaz;
-- los escenarios de prueba, cómo se corren y qué esperan;
-- la capa de depuración y cómo se enciende;
-- si la IA del bando enemigo hace trampa en alguna dificultad, cuál y por qué.
+## Dónde vive cada cosa (prototipo, 2026-10-26)
+
+- `js/sim/partida.js`: la partida. `creaPartida({ mapa, semilla, fuerzas })`, `ordena(p, orden)`, `paso(p)`,
+  `huella(p)` y `penetra(...)`. Dentro, por secciones:
+  - órdenes y obediencia (`cumple`, `disposicion`): cada soldado decide; motivos `panico`, `fijado`, `acobardado`,
+    `suprimido`. Retirarse, esconderse y parar se cumplen siempre (salvo el pánico);
+  - detección por bando (`detecta`): cada soldado mira cada `REGLAS.pensar` pasos, escalonado por id; la detección se
+    llena por segundo según la postura, si dispara y si es un carro; los contactos se olvidan a los `REGLAS.olvido` s;
+  - el soldado (`soldado`, `mueve`, `dispara`, `fuego`): formación en cuña (o línea) en el destino, la ruta de cada
+    uno con A*, arrastrarse si está suprimido, fuego apuntado al contacto que ve o de zona (ametralladoras y
+    automáticas) al último sitio donde se vio;
+  - la puntería: precisión × e^(−d/caída) × supresión del tirador × moverse × postura y cobertura del blanco (su casilla
+    o la de delante hacia el tirador);
+  - la supresión (`suprime`): cada disparo suma la del arma a los de cerca del punto de impacto; se va con vida media
+    (más corta a cubierto o tumbado);
+  - las bajas (`baja`): herido o muerto según la letalidad, y el golpe a la moral de los suyos;
+  - el carro (`carro`, `disparaCañon`, `impactoCarro`, `penetra`): gira sobre las orugas, la torreta sigue al blanco,
+    cañón contra carros (perforante, lado por el ángulo, espesor / cos) y explosivo o coaxial contra infantería;
+  - la moral (`moral`): estados con histéresis, recuperación a cubierto y con el jefe cerca, miedo al carro, contagio
+    del pánico;
+  - el humo por iniciativa propia (`humoIA`) y la victoria (`victoria`).
+- `js/sim/rutas.js`: A* con desempates fijos, `andableCerca`, `rectaLibre`, `suaviza`.
+- `js/sim/vista.js`: `seVe` con la regla del seto (lo pegado a un extremo no tapa, salvo las casas) y el humo.
+- `js/sim/ia.js`: el mando del bando que defiende: posiciones de tiro en el seto que mira al enemigo por delante del
+  objetivo, el carro junto al objetivo, y repliegue a la granja de la escuadra que se rompe.
+- Las cifras: `js/data/reglas.js` (paso, velocidades, vista, detección, supresión, moral, obediencia, humo, victoria),
+  `js/data/armas.js` y `js/data/unidades.js`.
+- Pruebas: `node tests/sim.mjs` (determinismo, obediencia, la regla del seto, el humo, la MG que clava a una escuadra
+  al descubierto, el blindaje, tres batallas enteras). Una batalla para mirarla: `node tools/batalla.mjs --semilla N`.
+- Rendimiento: 0,1–0,4 ms por paso con 40 soldados y 2 carros.
+
+## Lo que falta o no convence (2026-10-26)
+
+- **El alemán se mete en el pasillo del camino**: va corriendo a sus setos por la ruta más barata, que es el camino,
+  y el Sherman lo barre desde el oeste. Le falta la ruta cubierta (el mapa de amenaza de `rutas.md`).
+- **El duelo de carros se decide en 12–20 s**: los dos van por el camino de frente y el que dispara primero gana.
+  Le falta al carro no meterse solo en un pasillo largo, el casco oculto y la escolta.
+- **Las batallas acaban en 1–5 minutos** porque el que llega mal se rompe enseguida; con las dos cosas de arriba
+  deberían durar más. La cifra de rotura (60 %) es del game-designer.
+- Aún no hay: capa de depuración, fuego de zona del jugador, rendirse ni heroísmo, ni munición.
 
 ## Decisiones (2026-10-26)
 

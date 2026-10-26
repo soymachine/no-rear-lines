@@ -1,11 +1,13 @@
 # El juego de Sin Retaguardia (mapa del proyecto)
 
-_Vacío por ahora: aún no hay juego._ Aquí irá lo que es de este juego, y no del oficio:
+Lo que es de este juego, y no del oficio.
 
-- dónde vive cada sistema y sus cifras (simulación y pasos, combate y puntería, moral y supresión, órdenes, carros,
-  artillería, objetivos y victoria, campaña), para citar `archivo:línea` en cada hallazgo;
-- cómo se juega una batalla sin interfaz (el bot de playtest), qué deja su registro y qué métricas salen de él;
-- las pruebas que ya existen y qué cubre cada una.
+- **Dónde vive cada sistema**: la simulación en `js/sim/` (el detalle, en `reference/proyecto.md` de `ia-tactica`);
+  todas las cifras en `js/data/reglas.js`, `armas.js` y `unidades.js`.
+- **Jugar una batalla sin interfaz**: `node tools/batalla.mjs --semilla N [--todo] [--json salida]`. EE. UU. sigue un
+  guion de órdenes y Alemania la IA; saca los sucesos que importan y el resumen (quién gana, cómo quedan los dos
+  bandos, cuántos sucesos de cada tipo). Es el germen del bot.
+- **Pruebas**: `node tests/sim.mjs` y `node tests/datos.mjs`.
 
 ## Decisiones (2026-10-26)
 

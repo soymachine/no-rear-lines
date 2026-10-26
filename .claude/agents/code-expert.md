@@ -22,10 +22,12 @@ Tu oficio tiene tres partes:
 
 ## El proyecto en breve
 
-_Por rellenar cuando haya código._ Aquí irá, en pocas líneas:
-- qué hay en cada carpeta de `js/` y cuántas líneas tiene, más o menos;
-- lo que se genera solo y no se edita a mano (`js/version.js` lo sube el gancho);
-- las decisiones que ya hay: dónde están, si son ADR o comentarios.
+- `js/data/`: las tablas con id (baldosas, armas, unidades, reglas, mapas). `js/sim/`: la simulación, sin DOM (mapa,
+  rutas, vista, partida, ia). `js/ui/raster.js` y `js/util/rng.js`: el motor de dibujo y el azar con semilla.
+  `prototipos/escala/`: la prueba visual de escala (no es el juego).
+- Lo que se genera solo: `js/version.js` (el gancho).
+- Las pruebas: `tests/datos.mjs` (datos completos), `tests/sim.mjs` (simulación); `tools/batalla.mjs` juega una.
+- Las decisiones: CLAUDE.md y el `reference/proyecto.md` de cada skill. Aún no hay ADR.
 
 Hasta entonces mandan las reglas de arquitectura de `CLAUDE.md`:
 - la simulación avanza en pasos fijos y no toca el DOM ni el canvas;

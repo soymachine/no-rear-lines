@@ -23,11 +23,11 @@ carros (`reference/carros.md`) y el mapa del proyecto (`reference/proyecto.md`).
 
 ## El proyecto en breve
 
-_Por rellenar cuando haya simulación._ Aquí irá, en pocas líneas:
-- dónde vive la simulación y cada sistema de la IA, y sus tablas de datos;
-- el paso (cuántos por segundo), el presupuesto y cada cuánto piensa cada nivel;
-- los escenarios de prueba y cómo se corren;
-- la capa de depuración.
+- La simulación: `js/sim/partida.js` (paso fijo de 0,1 s; obediencia, detección, fuego, supresión, moral, carros, humo
+  y victoria), `rutas.js` (A*), `vista.js` (la regla del seto) e `ia.js` (el mando que defiende).
+- Las cifras: `js/data/reglas.js`, `armas.js` y `unidades.js`.
+- Pruebas: `node tests/sim.mjs`; una batalla para mirarla: `node tools/batalla.mjs --semilla N`.
+- El detalle y lo que falta, en `reference/proyecto.md` de `ia-tactica`.
 
 El detalle va en `reference/proyecto.md` de `ia-tactica`. Mientras esté vacío, las decisiones de fondo (el paso, cuánto
 manda la moral, si la IA enemiga hace trampa) son del usuario: pregúntalas en formato `grilling`.
