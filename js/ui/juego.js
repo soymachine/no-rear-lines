@@ -7,7 +7,7 @@
 //   y E R X; 1 2 3 eligen; la rueda cambia de vista; WASD, flechas, el borde o el botón central mueven la cámara;
 //   B quita o pone las marcas de bando; Esc detiene la partida (sin órdenes mientras tanto).
 // Parámetros (?…): escenario=granja · semilla=N · lang=en · prueba=1 (el tiempo no corre solo: lo avanzan las pruebas
-// con window.__nrl.avanza(n)).
+// con window.__nrl.avanza(n), a pasos enteros, o tools/video.mjs con window.__nrl.fotograma(dt), como un fotograma real).
 import { creaBatalla, aplicaGuion } from '../sim/escenario.js';
 import { paso, ordena } from '../sim/partida.js';
 import { ia } from '../sim/ia.js';
@@ -312,8 +312,19 @@ window.__nrl = {
   p, listo: true,
   // n pasos (con el guion de prueba del jugador si guion), y un dibujo al final
   avanza(n, guion = false) { for (let i = 0; i < n && !p.fin; i++) { reloj += DT; if (guion) aplicaGuion(p); unPaso(); } dibuja(1); pintaHud(); return { t: p.t, fin: p.fin }; },
+  // un fotograma de verdad de dt segundos (para grabar: tools/video.mjs): el reloj y el acumulador avanzan dt, corren los
+  // pasos que toquen (con el guion si guion) y se dibuja interpolado (alfa = lo que sobra de paso) con el marcador.
+  // Devuelve los sucesos de esos pasos. Con ?prueba=1 el bucle de la página no avanza el tiempo, pero sí dibuja (alfa 1):
+  // quien grabe tiene que pararlo (tools/video.mjs deja requestAnimationFrame sin efecto).
+  fotograma(dt, guion = false) {
+    const sucesos = [];
+    reloj += dt; acc += dt;
+    while (acc >= DT && !p.fin) { if (guion) aplicaGuion(p); unPaso(); sucesos.push(...p.sucesos); acc -= DT; }
+    dibuja(p.fin ? 1 : acc / DT); pintaHud();
+    return { t: p.t, fin: p.fin, sucesos };
+  },
   ordena: (o) => ordena(p, o),
   vista(v) { vista = v; ajusta(); dibuja(1); },
-  camara(x, y) { cam.x = x * T; cam.y = y * T; limitaCam(); dibuja(1); },
+  camara(x, y) { cam.x = x * T; cam.y = y * T; limitaCam(); dibuja(1); return { x: cam.x / T, y: cam.y / T }; }, // (devuelve dónde queda, recortada al mapa)
   elige(s) { sel = s; },
 };
