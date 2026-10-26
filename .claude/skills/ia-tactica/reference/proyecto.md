@@ -32,3 +32,15 @@ _Vacío por ahora: aún no hay simulación._ Aquí irá lo que es de este juego,
 
 - **El prototipo empieza por la simulación en Node**: mapa, unidades, pasos fijos, línea de visión, supresión y moral,
   con pruebas deterministas. Enseguida, un dibujo mínimo encima para verla moverse.
+
+## Decisiones (cuarta ronda, 2026-10-26)
+
+- **El seto tapa la vista del todo, salvo para quien está pegado a él**: un soldado en el seto (o junto a él) ve y
+  dispara al campo de al lado, como en el bocage real. Los setos son posiciones de tiro, no solo paredes.
+- **Escuadras del prototipo**: EE. UU., 10 hombres (jefe con Thompson, un BAR y 8 M1 Garand); Alemania, 10 hombres
+  (jefe con MP 40, la MG 42 con su tirador y dos sirvientes, y fusileros con Kar 98k). Carros: M4 Sherman (75 mm)
+  contra Panzer IV H.
+- **Bajas**: herido (fuera de combate, se queda y asusta a los suyos) y muerto; sin curación en el prototipo.
+- **Victoria**: quien controle el patio de la granja a los 15 minutos (más soldados en condiciones dentro), o antes si
+  el otro bando se rompe.
+- **El jugador lleva a EE. UU. (ataca)** y la IA a Alemania (llega antes y defiende la granja).

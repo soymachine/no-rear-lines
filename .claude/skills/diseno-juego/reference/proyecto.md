@@ -27,3 +27,12 @@ _Vacío por ahora: aún no hay juego._ Aquí irá lo que es de este juego, y no 
 - La resolución de dibujo se adapta a la pantalla con ×2 fijo: una pantalla más grande ve más mapa.
 - El prototipo empieza por la simulación en Node con pruebas deterministas, y luego un dibujo mínimo.
 - Los mapas, rejillas de texto en datos; el editor visual, más adelante.
+
+## Decisiones (cuarta ronda, 2026-10-26)
+
+- Setos: tapan del todo salvo para quien está pegado a ellos (posiciones de tiro).
+- Escuadras de 10 (EE. UU.: Thompson, BAR y 8 M1; Alemania: MP 40, MG 42 con dos sirvientes y Kar 98k); Sherman contra
+  Panzer IV H.
+- Bajas: herido y muerto, sin curación.
+- Victoria: el patio de la granja a los 15 minutos, o antes si el otro bando se rompe.
+- El jugador ataca con EE. UU.; la IA defiende con Alemania.
