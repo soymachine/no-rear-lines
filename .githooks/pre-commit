@@ -1,0 +1,9 @@
+#!/bin/sh
+# el analizador (eslint.config.js: variables sin declarar, ids repetidos, código inalcanzable…): con errores no se hace
+# el commit; los avisos (lo que sobra) no lo paran. Solo si ESLint está instalado (npm i -g eslint). Va primero: si
+# para el commit, la versión no ha subido
+if command -v eslint >/dev/null 2>&1 && git diff --cached --name-only | grep -q '^\(js\|tools\)/'; then
+  eslint --quiet js tools || { echo 'ESLint: hay errores (eslint js tools)'; exit 1; }
+fi
+# sube la versión del juego (js/version.js) en cada commit
+node tools/version.mjs || exit 1
