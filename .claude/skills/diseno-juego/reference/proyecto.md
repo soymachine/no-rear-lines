@@ -6,3 +6,11 @@ _Vacío por ahora: aún no hay juego._ Aquí irá lo que es de este juego, y no 
   artillería, objetivos y victoria, campaña), para citar `archivo:línea` en cada hallazgo;
 - cómo se juega una batalla sin interfaz (el bot de playtest), qué deja su registro y qué métricas salen de él;
 - las pruebas que ya existen y qué cubre cada una.
+
+## Decisiones (2026-10-26)
+
+- **Sin pausa.** El ritmo y las órdenes tienen que dejar que el jugador llegue sin parar el tiempo.
+- **Realismo**: la moral y la supresión se tienen que sentir creíbles, no como un dado.
+- **Prototipo**: un mapa hecho a mano con cinco baldosas, dos escuadras y un carro por bando (EE. UU. contra Alemania,
+  Normandía 1944), línea de visión con niebla de guerra, moral, supresión, granadas de humo y sonido sintetizado.
+- **Mapas grandes**, que se recorren con desplazamiento.

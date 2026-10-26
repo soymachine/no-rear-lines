@@ -42,8 +42,8 @@ usuario lo pida.
 Son las reglas de `CLAUDE.md`, vistas desde el código. Si una propuesta las rompe, dilo y no la hagas sin permiso.
 
 - **Pasos fijos.** La simulación avanza en pasos de duración fija (por ejemplo, 10 por segundo) con un acumulador: el
-  tiempo real se reparte en pasos enteros, y lo que sobra es la fracción `alfa` del dibujo. Con la pausa no corre
-  ningún paso. Las órdenes del jugador se encolan y entran al principio del paso siguiente, nunca a mitad.
+  tiempo real se reparte en pasos enteros, y lo que sobra es la fracción `alfa` del dibujo. No hay pausa táctica.
+  Las órdenes del jugador se encolan y entran al principio del paso siguiente, nunca a mitad.
 - **La simulación no sabe que se dibuja.** No importa nada del DOM, del canvas ni del audio. Emite **sucesos**
   (disparo, impacto, explosión, unidad suprimida…) que el dibujo y el sonido leen después. Así corre en Node, en un
   worker o diez veces más deprisa para el bot de playtest.

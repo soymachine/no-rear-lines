@@ -11,7 +11,7 @@ humo, el fuego y las explosiones. Qué efecto lleva cada arma y dónde vive cada
   fotograma), con `t` desde que empezó la acción. Nunca «uno más cada vez que se pinta»: a 30 o a 144 fps tiene que
   verse igual, y la lámina de `captura-anim.mjs` tiene que salir igual cada vez.
 - **La simulación dice qué pasa y el dibujo dice cómo se ve.** El dibujo lee los sucesos de la simulación (disparo,
-  impacto, explosión, unidad que cae) y arranca la animación con su propio reloj. Con la pausa, ese reloj se para. La
+  impacto, explosión, unidad que cae) y arranca la animación con su propio reloj. Si el juego se detiene (un menú), ese reloj se para. La
   simulación nunca espera a que acabe una animación.
 - **Azar visual aparte**: chispas, humo y cascotes salen de un `RNG` propio con semilla (la del suceso, por ejemplo
   `strHash(id + ':' + paso)`), nunca de `Math.random` ni del azar de la simulación. Así dos repeticiones se ven igual y

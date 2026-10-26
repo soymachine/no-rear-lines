@@ -7,3 +7,16 @@ _Vacío por ahora: aún no hay mapas._ Aquí irá lo que es de este juego, y no 
   se rompe), generada de los datos;
 - qué mapas hay y para qué escenario;
 - las herramientas (medir, capturar) y las pruebas de los mapas.
+
+## Decisiones (2026-10-26)
+
+- **Mapas grandes**, hechos a mano, que se recorren con desplazamiento. El tamaño exacto, tras las pruebas visuales.
+- **El mapa del prototipo** (para probar ahora): unas 128×72 casillas de 4 m con cinco baldosas:
+  - campo;
+  - seto: tapa la vista, cubre poco y frena al carro;
+  - camino;
+  - casa: tapa y cubre; en el prototipo no se entra;
+  - bosque: tapa, frena y el carro no pasa.
+
+  Un objetivo en el cruce de la granja, dos rutas hacia él (los setos o el camino) y un despliegue en cada extremo.
+- Teatro: Normandía, verano de 1944 (bocage).

@@ -1,7 +1,7 @@
 # Diseño de niveles · qué hace bueno un mapa táctico
 
 Una batalla aquí es: dos bandos despliegan cada uno en su lado, se buscan, se ven, se disparan, se suprimen y maniobran
-por el terreno para tomar o defender unos objetivos, en tiempo real y con pausa. El mapa es la mitad del juego: decide
+por el terreno para tomar o defender unos objetivos, en tiempo real y sin pausa. El mapa es la mitad del juego: decide
 qué decisiones hay. Revisa cada mapa con estas preguntas, respóndelas con cifras y con la captura y, al final, pasa la
 lista de revisión (§ 9).
 

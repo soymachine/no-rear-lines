@@ -11,15 +11,15 @@ La guerrilla no tiene frente: el enemigo puede estar detrás de cualquier seto.
 - **Todo el arte es pixel art dibujado en código** (`js/ui/raster.js`): sin imágenes.
 - **Estado**: arranque. Hay agentes, skills y herramientas (traídos de La Misión Topolev: `ORIGEN-TOPOLEV.md`), pero
   todavía no hay código del juego. El primer prototipo será un mapa hecho a mano con pocas baldosas, dos escuadras y
-  un carro por bando, tiempo real con pausa, línea de visión, moral, supresión y sonido.
+  un carro por bando, tiempo real sin pausa, línea de visión, moral, supresión y sonido.
 
 ## Las reglas de arquitectura
 
 Mandan sobre cualquier propuesta. Cambiarlas es una decisión del usuario.
 
 1. **La simulación va en pasos fijos y no toca el DOM ni el canvas.** Avanza en pasos de duración fija (por ejemplo,
-   10 por segundo) con un acumulador. Con la pausa no corre ningún paso. Las órdenes del jugador se encolan y entran al
-   principio del paso siguiente. La simulación no importa nada del DOM, del canvas ni del audio: emite **sucesos**
+   10 por segundo) con un acumulador. **No hay pausa táctica**: el tiempo no se para para mandar. Las órdenes del
+   jugador se encolan y entran al principio del paso siguiente. La simulación no importa nada del DOM, del canvas ni del audio: emite **sucesos**
    (disparo, impacto, unidad suprimida…) que el dibujo y el sonido leen después. Así corre en Node, en un worker o
    deprisa para el bot de playtest.
 2. **Todo el azar sale de `js/util/rng.js` con semilla; nunca `Math.random`.** La partida tiene su semilla y su `RNG`.

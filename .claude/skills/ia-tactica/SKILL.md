@@ -1,6 +1,6 @@
 ---
 name: ia-tactica
-description: El oficio de la IA táctica de Sin Retaguardia, un juego táctico en tiempo real con pausa al estilo de Close Combat. Cómo se mueven y deciden los soldados, las escuadras y los carros dentro de una simulación determinista en pasos fijos. Rutas en rejilla (A*, costes por terreno y por clase de unidad, rutas cubiertas, campos de flujo), formación, movimiento a cubierto, visión y detección, moral, supresión, reacción al fuego, coordinación de escuadra (fuego y movimiento, avance por saltos), obediencia filtrada por la moral, puntería, y carros (rumbo del casco y de la torreta, blindaje por lados y ángulo, vista, ruido, elección de blanco). Úsala ante cualquier petición sobre el comportamiento de las unidades o su depuración.
+description: El oficio de la IA táctica de Sin Retaguardia, un juego táctico en tiempo real sin pausa al estilo de Close Combat. Cómo se mueven y deciden los soldados, las escuadras y los carros dentro de una simulación determinista en pasos fijos. Rutas en rejilla (A*, costes por terreno y por clase de unidad, rutas cubiertas, campos de flujo), formación, movimiento a cubierto, visión y detección, moral, supresión, reacción al fuego, coordinación de escuadra (fuego y movimiento, avance por saltos), obediencia filtrada por la moral, puntería, y carros (rumbo del casco y de la torreta, blindaje por lados y ángulo, vista, ruido, elección de blanco). Úsala ante cualquier petición sobre el comportamiento de las unidades o su depuración.
 ---
 
 # IA táctica
@@ -31,8 +31,8 @@ Son las de CLAUDE.md, y la IA es donde más fácil es romperlas:
   fijo** (por id). Nunca `Math.random`, la hora ni el orden de un `Set` que dependa de cómo se llenó. Si hace falta que
   añadir una unidad no cambie las tiradas de las demás, cada una lleva su propio `RNG` sembrado con la semilla de la
   partida y su id. La prueba: la misma semilla y las mismas órdenes dan la misma huella.
-- **Las órdenes entran al principio del paso.** Con la pausa no corre ningún paso; las órdenes se encolan y se aplican
-  en el siguiente.
+- **Las órdenes entran al principio del paso.** No hay pausa táctica: las órdenes se encolan y se aplican en el
+  siguiente. Como el jugador no puede parar el tiempo, la IA tiene que hacer bien lo pequeño sin que se lo pidan.
 - **Pensar no es cada paso.** Las decisiones caras (elegir cobertura, replanificar, escoger blanco) se toman cada pocos
   pasos y **escalonadas** (cada unidad en su turno: `(paso + id) % k === 0`), con un presupuesto por paso para las rutas
   y la línea de visión. Lo urgente (una granada al lado, una bala que pasa) interrumpe.

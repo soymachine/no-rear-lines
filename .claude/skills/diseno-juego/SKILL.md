@@ -1,11 +1,11 @@
 ---
 name: diseno-juego
-description: Criterio de diseñador de juegos para Sin Retaguardia, un juego táctico en tiempo real con pausa al estilo de Close Combat (Segunda Guerra Mundial, guerrillas, carros y bombardeos pequeños). Cómo analizar el bucle de la batalla y de la campaña, la dificultad, el equilibrio entre bandos, armas y unidades, la moral, la supresión y la obediencia como mecánicas, el ritmo y la claridad (que se lea lo que pasa); cómo leer una partida simulada sin engañarse; y cómo convertir lo observado en hallazgos accionables (errores, inconsistencias y mejoras) con la plantilla del informe de playtest. Úsala al revisar mecánicas, equilibrio o ritmo, al leer una partida simulada o al escribir el informe de playtest.
+description: Criterio de diseñador de juegos para Sin Retaguardia, un juego táctico en tiempo real sin pausa al estilo de Close Combat (Segunda Guerra Mundial, guerrillas, carros y bombardeos pequeños). Cómo analizar el bucle de la batalla y de la campaña, la dificultad, el equilibrio entre bandos, armas y unidades, la moral, la supresión y la obediencia como mecánicas, el ritmo y la claridad (que se lea lo que pasa); cómo leer una partida simulada sin engañarse; y cómo convertir lo observado en hallazgos accionables (errores, inconsistencias y mejoras) con la plantilla del informe de playtest. Úsala al revisar mecánicas, equilibrio o ritmo, al leer una partida simulada o al escribir el informe de playtest.
 ---
 
 # Diseño de juego
 
-El juego es una **batalla táctica en tiempo real con pausa**: el jugador manda escuadras y carros, no soldados uno a
+El juego es una **batalla táctica en tiempo real, sin pausa**: el jugador manda escuadras y carros, no soldados uno a
 uno. Cada soldado decide lo suyo (cubrirse, devolver el fuego, no avanzar) según su moral y lo que le está pasando. Lo
 que importa al revisarlo no es «qué me gustaría», sino **qué hace el jugador, qué siente y qué decisiones toma**,
 medido cuando se pueda.
@@ -38,8 +38,9 @@ medido cuando se pueda.
 - **Que se lea lo que pasa.** Quién está suprimido, qué ve cada uno, de dónde viene el fuego, por qué alguien no
   obedece y qué tapa el terreno. El jugador debe poder explicar por qué ganó o perdió. En pixel art depende tanto del
   dibujo como de las reglas.
-- **La pausa no es trampa**: el juego tiene que ser jugable sin pausa en lo pequeño y pedir pausa para lo grande. Si
-  solo se puede jugar pausando cada segundo, el ritmo está mal.
+- **Sin pausa, el jugador tiene que llegar**: no se puede parar el tiempo para mandar. Las órdenes se dan deprisa
+  (pocas y claras), los soldados resuelven solos lo pequeño y el ritmo deja tiempo para pensar lo grande. Si el
+  jugador no da abasto con dos escuadras y un carro, el ritmo o la interfaz están mal.
 - **Armas y unidades con un papel**: la ametralladora suprime y fija, el fusilero maniobra, el subfusil limpia de
   cerca, el antitanque caza carros, el carro rompe y da miedo, el mortero saca de la cobertura. Si una lo hace todo o
   una no sirve para nada, es un hallazgo.

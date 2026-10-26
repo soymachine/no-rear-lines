@@ -197,7 +197,7 @@ Del oficio:
 - 2026-10-21: **una animación que deja un resto** (cascotes, un carro destruido, un casquillo): el MISMO plano
   determinista (azar sembrado con el sitio, el tipo y el momento; en caché por resto) da la trayectoria y el sitio
   final, y el resto no se pinta posado mientras vuela. Se registra cuando el dibujo lee el suceso, no cuando la
-  simulación lo emite: así respeta la pausa y la velocidad. Lo que vuela va encima de las unidades y los objetos.
+  simulación lo emite: así respeta el ritmo del dibujo. Lo que vuela va encima de las unidades y los objetos.
 - 2026-10-21: para comparar el antes y el después de un módulo con la misma partida: en Playwright,
   `context.route('**/js/<módulo>.js*', …)` sirve la copia vieja guardada en el scratchpad, con la misma semilla.
 - 2026-10-21: **cámara lenta** con Playwright: en `addInitScript`, envolver `performance.now` y el tiempo de
@@ -226,3 +226,16 @@ Del oficio:
   mezcla es en sRGB y la luminancia cae más rápido que el valor). Lo bloqueado, a .78 como mínimo; un bloque invertido
   en un tono medio no deja llegar a 3:1 ni a la tinta clara ni a los colores. Si un texto no contrasta, casi siempre es
   una opacidad heredada de un antepasado, no su color.
+- 2026-10-26 (prueba de escala, `prototipos/escala/`, baldosa de 8 px y soldados de 10 px):
+  - **Un seto de bocage se lee bien** como matas fundidas (`fuse` de una elipse en el centro y cápsulas hacia los
+    vecinos que también son seto, con una máscara de 4 bits), pintado como sprite que se sale de su baldosa y con la
+    sombra aparte (la silueta, desplazada y con transparencia). Unos pocos árboles al azar sobre el seto rompen la
+    monotonía. El bosque: copas fundidas, una cada dos casillas en damero y con un desplazamiento por hash, se lee como
+    masa densa.
+  - **Un tejado a cuatro aguas** sale solo con una forma cuya normal mira al borde más cercano: la luz enciende el
+    faldón norte y el oeste, y los limatones salen en diagonal.
+  - **La torreta del mismo color que el casco se pierde** a ×1: hace falta otro tono (más claro u oscuro) o un filo.
+  - **Un soldado de pie con brazos, fusil y mochila** se lee como una araña o una X a 10 px. Menos piezas: casco,
+    hombros y el arma.
+  - **El humo con bocanadas sombreadas y opacas** parece algodón: necesita menos volumen y más transparencia.
+  - Una escena de 640×360 con todo pintado en hojas sale en unos 0,4 s, contando la carga de la página.

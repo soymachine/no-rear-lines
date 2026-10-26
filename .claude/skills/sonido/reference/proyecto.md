@@ -7,3 +7,10 @@ _Vacío por ahora: aún no hay audio._ Aquí irá lo que es de este juego, y no 
 - la lista de claves que el juego pide y dónde se guardan el banco, la mezcla y los créditos;
 - los ajustes del jugador y sus valores por defecto (los que usa `mide-sonido.mjs` para el «en juego»);
 - las pruebas de audio.
+
+## Decisiones (2026-10-26)
+
+- **Prototipo, solo síntesis WebAudio**: fusil, ametralladora, cañón, impacto, explosión, granada de humo, motor de
+  carro y viento. Sin grabaciones ni licencias que gestionar.
+- **Más adelante**: grabaciones con licencia clara, y un **importador y generador de sonidos en un admin** (escuchar,
+  recortar, variantes, volumen por clave, generar sonidos sintéticos y guardarlos en su clave).
