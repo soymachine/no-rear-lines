@@ -1,0 +1,11 @@
+# basura de macOS
+.DS_Store
+
+# herramientas que no son del juego
+node_modules/
+dist/
+.claude/worktrees/
+
+# docs/ no se sube (capturas sueltas), salvo las decisiones de arquitectura (ADR) del agente code-expert
+/docs/*
+!/docs/adr/
