@@ -1,8 +1,9 @@
 // La simulación, sin navegador: determinismo, obediencia, la regla del seto, la supresión de una ametralladora sobre
-// una escuadra que cruza al descubierto, el blindaje de los carros, el humo, el mapa de amenaza y la ruta cubierta, el
-// carro de la IA (escolta y emboscada) y una batalla entera en la granja.
+// una escuadra que cruza al descubierto, el blindaje de los carros, el casco oculto, el humo, el mapa de amenaza y la
+// ruta cubierta (también la del jugador: MOVER cubierto y CORRER directo), el carro de la IA (escolta y emboscada) y una
+// batalla entera en la granja.
 // Uso: node tests/sim.mjs
-import { creaPartida, paso, ordena, huella, penetra } from '../js/sim/partida.js';
+import { creaPartida, paso, ordena, huella, penetra, cascoOculto } from '../js/sim/partida.js';
 import { ia } from '../js/sim/ia.js';
 import { fuentesAmenaza, mapaAmenaza } from '../js/sim/amenaza.js';
 import { seVe } from '../js/sim/vista.js';
@@ -10,6 +11,7 @@ import { cargaMapa } from '../js/sim/mapa.js';
 import { GRANJA } from '../js/data/mapas/granja.js';
 import { ARMA } from '../js/data/armas.js';
 import { CARRO } from '../js/data/unidades.js';
+import { duelos } from '../tools/duelo.mjs';
 
 let fallos = 0;
 const ok = (c, msg) => { console.log(`${c ? '  ✓' : '  ✗'} ${msg}`); if (!c) fallos++; };
@@ -87,16 +89,27 @@ const mapa = (filas, extra = {}) => ({ id: 'prueba', nombre: { es: 'Prueba', en:
   ok(sesgo.lado === 'lado' && sesgo.espesor >= CARRO.panzer4.blindaje.casco.lado * 1.25, `un flanco sesgado cuenta más espesor (${sesgo.espesor} mm frente a ${CARRO.panzer4.blindaje.casco.lado})`);
 }
 
+// el casco oculto: un carro con un seto pegado entre él y quien le dispara solo enseña la torreta; desde atrás, o con el
+// seto a dos casillas, no. En el duelo de frente (tools/duelo.mjs), el Sherman oculto gana bastante más que sin la regla
+{
+  const m = cargaMapa(mapa(Array.from({ length: 9 }, () => '..........#..........')));
+  const c = { x: 9.5, y: 4.5 };
+  ok(cascoOculto(m, c, { x: 30, y: 4.5 }) && cascoOculto(m, c, { x: 30, y: 12 }), 'con el seto pegado delante, el casco no se ve (de frente y en diagonal)');
+  ok(!cascoOculto(m, c, { x: 0, y: 4.5 }) && !cascoOculto(m, { x: 8.5, y: 4.5 }, { x: 30, y: 4.5 }), 'desde atrás, o con el seto a dos casillas, sí');
+  const con = duelos({ oculto: 'sherman', d: 30, geo: 'frente', casco: true }, 150), sin = duelos({ oculto: 'sherman', d: 30, geo: 'frente', casco: false }, 150);
+  ok(con.oculto >= sin.oculto + 0.08, `duelo de frente a 30 casillas: el Sherman oculto gana el ${(con.oculto * 100).toFixed(0)} % (sin la regla, el ${(sin.oculto * 100).toFixed(0)} %)`);
+}
+
 // el mapa de amenaza y la ruta cubierta: con un enemigo conocido al oeste que ve el campo abierto de abajo, una
 // escuadra que va de este a oeste por ese campo, con MOVER cubierto, da la vuelta por detrás del seto largo (arriba) y
 // solo baja al final; sin cubierto, va derecha por el campo
 {
   const filas = Array.from({ length: 24 }, (_, y) => (y === 8 ? '.'.repeat(6) + '#'.repeat(40) + '.'.repeat(14) : y < 8 ? '.'.repeat(6) + '#' + '.'.repeat(53) : '.'.repeat(60)));
-  const corre = (cubierta) => {
+  // (el mapa de amenaza lo pone al día la propia partida con lo que sabe el bando: sus contactos)
+  const corre = (cubierta, tipo = 'mover') => {
     const p = creaPartida({ mapa: mapa(filas), semilla: 5, fuerzas: [{ lado: 'us', escuadras: [{ tipo: 'us_fusileros', x: 2, y: 16 }] }, { lado: 'de', escuadras: [{ tipo: 'de_gruppe', x: 52, y: 14 }] }] });
     p.contactos.de.set(0, { x: 2.5, y: 16.5, t: 0, ahora: false }); // un contacto viejo: el jefe americano, al oeste
-    p.amenaza.de = mapaAmenaza(p.m, fuentesAmenaza(p, 'de'));
-    ordena(p, { tipo: 'mover', escuadra: 'de1', x: 12, y: 13, cubierta });
+    ordena(p, { tipo, escuadra: 'de1', x: 12, y: 13, ...(cubierta != null && { cubierta }) });
     paso(p);
     // a lo largo de cada ruta (cada media casilla): qué parte está a la vista y qué parte va por detrás del seto
     const a = p.amenaza.de, us = p.unidades.filter((u) => u.lado === 'de');
@@ -120,6 +133,16 @@ const mapa = (filas, extra = {}) => ({ id: 'prueba', nombre: { es: 'Prueba', en:
   const sin = corre(false), con = corre(true);
   ok(con.vistas < 0.35 && sin.vistas > 0.8, `con la ruta cubierta, ${(con.vistas * 100).toFixed(0)} % de la ruta a la vista (sin ella, ${(sin.vistas * 100).toFixed(0)} %)`);
   ok(con.arriba >= 8 && sin.arriba === 0, `con la ruta cubierta, ${con.arriba} de 10 van sobre todo por detrás del seto (sin ella, ${sin.arriba})`);
+  // las órdenes del jugador no dicen nada: MOVER va por lo cubierto y CORRER por lo rápido
+  const mover = corre(undefined, 'mover'), correr = corre(undefined, 'correr');
+  ok(mover.vistas === con.vistas && correr.arriba === 0 && correr.vistas > 0.8, `sin decirlo, MOVER va cubierto (${(mover.vistas * 100).toFixed(0)} % a la vista) y CORRER directo (${(correr.vistas * 100).toFixed(0)} %)`);
+  // niebla de guerra: un enemigo que el bando no ha visto no entra en su mapa
+  // (un alemán en (40, 20), lejos de su despliegue y de su llegada esperada: su bloque de 4 × 4 no tiene fuente hasta verlo)
+  const pn = creaPartida({ mapa: mapa(filas), semilla: 5, fuerzas: [{ lado: 'us', escuadras: [{ tipo: 'us_fusileros', x: 4, y: 16 }] }, { lado: 'de', escuadras: [{ tipo: 'de_gruppe', x: 40, y: 20 }] }] });
+  const cerca = (f) => f.some((q) => Math.floor(q.x / 4) === 10 && Math.floor(q.y / 4) === 5);
+  const antes = cerca(fuentesAmenaza(pn, 'us'));
+  pn.contactos.us.set(10, { x: 40.5, y: 20.5, t: 0, ahora: true });
+  ok(!antes && cerca(fuentesAmenaza(pn, 'us')), 'el mapa del jugador solo lleva lo que sabe: el alemán que no ha visto no está; visto, sí');
 }
 
 // el carro de la IA: sin escolta de infantería no sale a emboscar (espera detrás del objetivo); con ella, se emboscan

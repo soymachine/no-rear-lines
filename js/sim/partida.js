@@ -7,8 +7,9 @@
 // fuerzas: [{ lado, escuadras: [{ tipo, x, y }], carros: [{ tipo, x, y, rumbo }] }]
 // órdenes: { tipo: 'mover'|'correr'|'esconderse'|'retirada'|'humo'|'alto', escuadra | carro: id, x, y }. Entran al
 // principio del paso siguiente; cada soldado decide si la cumple según su estado (obediencia filtrada por la moral).
-// Con cubierta: true, la ruta pesa lo que se ve desde el enemigo (p.amenaza[lado], el mapa de amenaza que deja la IA
-// del bando: amenaza.js); con mira, el carro, al llegar, encara el casco y la torreta hacia ese rumbo.
+// Con cubierta: true, la ruta pesa lo que se ve desde el enemigo (p.amenaza[lado], el mapa de amenaza del bando con
+// lo que sabe: amenaza.js); sin decirlo, van cubiertas las de REGLAS.amenaza.cubiertas (MOVER sí, CORRER no), sean del
+// jugador o de la IA. Con mira, el carro, al llegar, encara el casco y la torreta hacia ese rumbo.
 import { RNG } from '../util/rng.js';
 import { ARMA } from '../data/armas.js';
 import { ESCUADRA, CARRO } from '../data/unidades.js';
@@ -16,6 +17,7 @@ import { REGLAS as R } from '../data/reglas.js';
 import { cargaMapa } from './mapa.js';
 import { ruta, suaviza, andableCerca } from './rutas.js';
 import { seVe } from './vista.js';
+import { amenazaAlDia } from './amenaza.js';
 
 const DT = R.paso;
 const ang = (ax, ay, bx, by) => Math.atan2(by - ay, bx - ax);
@@ -30,7 +32,7 @@ const LINEA = [[0, 0], [0, -2], [0, 2], [0, -4], [0, 4], [0, -6], [0, 6], [0, -8
 export function creaPartida({ mapa, semilla = 1, fuerzas }) {
   const p = {
     m: cargaMapa(mapa), def: mapa, semilla, rng: new RNG(semilla), t: 0, unidades: [], porId: {}, escuadras: [],
-    contactos: { us: new Map(), de: new Map() }, amenaza: { us: null, de: null }, humo: [], lanzamientos: [], cola: [], sucesos: [], fin: null,
+    contactos: { us: new Map(), de: new Map() }, amenaza: { us: null, de: null }, amenazaFirma: { us: null, de: null }, amenazaVersion: { us: 0, de: 0 }, humo: [], lanzamientos: [], cola: [], sucesos: [], fin: null,
   };
   let n = 0;
   const pon = (u) => { u.id = n++; p.unidades.push(u); p.porId[u.id] = u; return u; };
@@ -65,6 +67,8 @@ export function paso(p) {
   if (p.fin) return;
   p.sucesos = [];
   for (const u of p.unidades) { u.px = u.x; u.py = u.y; u.prumbo = u.rumbo; if (u.tipo === 'carro') u.ptorreta = u.torreta; }
+  // el mapa de amenaza de cada bando, al día con lo que sabe (solo se rehace si han cambiado sus contactos)
+  if (p.t % R.amenaza.cada === 0) for (const lado of Object.keys(p.contactos)) amenazaAlDia(p, lado);
   for (const o of p.cola.splice(0)) cumple(p, o);
   for (const l of p.lanzamientos.splice(0)) if (l.cuando <= p.t) { p.humo.push({ x: l.x, y: l.y, r: R.humo.radio, hasta: p.t + R.humo.vida / DT }); suceso(p, { tipo: 'humo', x: l.x, y: l.y, r: R.humo.radio }); } else p.lanzamientos.push(l);
   p.humo = p.humo.filter((n) => n.hasta > p.t);
@@ -123,10 +127,11 @@ function cumple(p, o) {
   const motivo = Object.entries(motivos).sort((a, b) => b[1] - a[1])[0];
   suceso(p, { tipo: 'orden', escuadra: esc.id, orden: o.tipo, cumplen, total: us.length, motivo: motivo ? motivo[0] : null });
 }
-// la ruta cubierta: el mapa de amenaza del bando y lo que pesa para esta orden (REGLAS.amenaza.peso), o nada
+// la ruta cubierta: el mapa de amenaza del bando (al día) y lo que pesa para esta orden (REGLAS.amenaza.peso), o nada.
+// Sin cubierta en la orden, la llevan los tipos de REGLAS.amenaza.cubiertas (MOVER: el jugador va por lo cubierto)
 function rutaCubierta(p, lado, o, clase) {
-  const a = o.cubierta && p.amenaza[lado], pe = a && R.amenaza.peso[clase];
-  return pe ? [a, pe] : [null, 1];
+  const pe = (o.cubierta ?? R.amenaza.cubiertas.includes(o.tipo)) && R.amenaza.peso[clase];
+  return pe ? [amenazaAlDia(p, lado), pe] : [null, 1];
 }
 // con la ruta cubierta, el hueco se corre a la casilla andable menos vista de alrededor (sin meterse en lo que tapa)
 function huecoCubierto(p, [hx, hy], ex) {
@@ -337,12 +342,14 @@ function carro(p, c) {
 function disparaCañon(p, c, e, d) {
   const a = ARMA[c.def.cañon];
   c.espera = 1 / a.cadencia; c.disparo = p.t;
-  const pa = a.precision * Math.exp(-d / a.caida) * (c.ruta.length ? 0.5 : 1) * (e.tipo === 'carro' && e.ruta.length ? 0.7 : 1);
+  // un carro con el casco oculto tras un seto solo enseña la torreta: cuesta más darle
+  const oculto = e.tipo === 'carro' && cascoOculto(p.m, e, c);
+  const pa = a.precision * Math.exp(-d / a.caida) * (c.ruta.length ? 0.5 : 1) * (e.tipo === 'carro' && e.ruta.length ? 0.7 : 1) * (oculto ? R.casco.punteria : 1);
   const acierta = p.rng.chance(pa);
   // donde cae si falla: cerca del blanco
   const x = acierta ? e.x : e.x + p.rng.float(-2, 2), y = acierta ? e.y : e.y + p.rng.float(-2, 2);
-  suceso(p, { tipo: 'cañonazo', de: c.id, arma: a.id, x0: c.x, y0: c.y, x1: x, y1: y, acierta });
-  if (e.tipo === 'carro') { if (acierta) impactoCarro(p, c, e, a, d); return; }
+  suceso(p, { tipo: 'cañonazo', de: c.id, arma: a.id, x0: c.x, y0: c.y, x1: x, y1: y, acierta, ...(oculto && { oculto }) });
+  if (e.tipo === 'carro') { if (acierta) impactoCarro(p, c, e, a, d, oculto); return; }
   // explosivo contra infantería
   suceso(p, { tipo: 'explosion', x, y, r: a.explosivo });
   for (const v of p.unidades) {
@@ -362,10 +369,22 @@ export function penetra(c, e, a, d) {
   const [p0, p1] = a.penetracion, pen = p0 + (p1 - p0) * Math.min(1, d / 250);
   return { lado, espesor: Math.round(espesor), pen: Math.round(pen), atraviesa: delta < 1.22 && pen > espesor };
 }
-function impactoCarro(p, c, e, a, d) {
-  e.torretaGolpe = p.rng.chance(0.35);
+// casco oculto: ¿hay una baldosa de REGLAS.casco.baldosas (un seto) pegada al carro e, en la línea hacia quien le
+// dispara? (las casillas que pisa esa línea hasta REGLAS.casco.pegado de su centro, sin contar la suya)
+export function cascoOculto(m, e, desde) {
+  const C = R.casco, d = Math.hypot(desde.x - e.x, desde.y - e.y) || 1, ux = (desde.x - e.x) / d, uy = (desde.y - e.y) / d;
+  const x0 = Math.floor(e.x), y0 = Math.floor(e.y);
+  for (let k = 0.25; k <= C.pegado; k += 0.25) {
+    const x = Math.floor(e.x + ux * k), y = Math.floor(e.y + uy * k), b = m.baldosa(x, y);
+    if ((x !== x0 || y !== y0) && b && C.baldosas.includes(b.id)) return true;
+  }
+  return false;
+}
+// el impacto en un carro: en la torreta (siempre con el casco oculto; si no, uno de cada tres) o en el casco
+function impactoCarro(p, c, e, a, d, oculto) {
+  e.torretaGolpe = oculto || p.rng.chance(0.35);
   const r = penetra(c, e, a, d);
-  suceso(p, { tipo: r.atraviesa ? 'penetra' : 'rebote', de: c.id, a: e.id, ...r });
+  suceso(p, { tipo: r.atraviesa ? 'penetra' : 'rebote', de: c.id, a: e.id, ...r, torreta: e.torretaGolpe, ...(oculto && { oculto }) });
   if (r.atraviesa) { e.estado = 'destruido'; e.ruta = []; suceso(p, { tipo: 'destruido', id: e.id }); }
 }
 

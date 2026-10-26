@@ -2,9 +2,11 @@
 // posición) y desde donde los espera: su despliegue (solo mientras no hay contactos) y la primera parte de su llegada
 // (las rutas más rápidas a pie y en carro desde su despliegue hasta el objetivo, que salen del mapa y no de lo que hace
 // el enemigo: no es trampa). Lo usan la ruta cubierta (cumple, en
-// partida.js, con las órdenes que llevan cubierta: true) y la IA del mando para elegir dónde ponerse. Niebla de guerra:
-// solo los contactos del bando, nunca la posición real de lo que no ve.
+// partida.js: las órdenes con cubierta y, sin decirlo, las de REGLAS.amenaza.cubiertas, del jugador o de la IA) y la IA
+// del mando para elegir dónde ponerse. Cada bando tiene el suyo, al día (amenazaAlDia). Niebla de guerra: solo los
+// contactos del bando, nunca la posición real de lo que no ve.
 //   fuentesAmenaza(p, lado) → [{ x, y, peso, alcance }]  ·  mapaAmenaza(m, fuentes) → Float32Array (w × h, 0 … tope)
+//   amenazaAlDia(p, lado) → p.amenaza[lado], rehecho solo si cambian sus fuentes
 // Cada fuente ilumina con shadowcasting (fov.js) lo que ve, con la regla del seto de vista.js: lo pegado a la fuente no
 // le tapa, y lo pegado a un seto o bosque que ve se ve por encima. Sin azar y en orden fijo (por casilla).
 import { computeFOV } from './fov.js';
@@ -55,6 +57,15 @@ function llegada(m, def, l) {
 export function firmaAmenaza(fuentes) {
   const k = R.amenaza.rejilla;
   return fuentes.map((f) => `${Math.floor(f.x / k)},${Math.floor(f.y / k)},${f.peso}`).join(';');
+}
+
+// el mapa de amenaza de un bando, al día: se rehace solo si cambia la firma de sus fuentes, y queda en p.amenaza[lado]
+// con su versión (cuántas veces se ha rehecho) en p.amenazaVersion[lado]. Lo llaman la partida (cada A.cada pasos y en
+// cada orden cubierta) y la IA del mando: el mismo para el bando del jugador que para el de la IA
+export function amenazaAlDia(p, lado) {
+  const f = fuentesAmenaza(p, lado), firma = firmaAmenaza(f);
+  if (firma !== p.amenazaFirma[lado] || !p.amenaza[lado]) { p.amenazaFirma[lado] = firma; p.amenaza[lado] = mapaAmenaza(p.m, f); p.amenazaVersion[lado]++; }
+  return p.amenaza[lado];
 }
 
 // el mapa: para cada casilla, Σ peso × caída con la distancia de las fuentes que la ven, hasta A.tope

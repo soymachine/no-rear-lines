@@ -3,7 +3,7 @@
 // propio: lo que decide sale de lo que sabe el bando (sus contactos, el mapa y el despliegue enemigo), nunca de la
 // posición real de lo que no ve.
 //   ia(p, lado)  antes de cada paso(p)
-// - El mapa de amenaza del bando (amenaza.js): se rehace cuando cambian los contactos (en bloques de
+// - El mapa de amenaza del bando (amenaza.js, amenazaAlDia): se rehace cuando cambian los contactos (en bloques de
 //   REGLAS.amenaza.rejilla casillas) y queda en p.amenaza[lado] para las rutas cubiertas de sus órdenes.
 // - Las escuadras, a un seto que mira al enemigo por delante del objetivo y que no se vea de lejos, por la ruta
 //   cubierta. Si lo que saben cambia mientras van de camino (y están en forma), rehacen la ruta.
@@ -13,7 +13,7 @@
 import { ordena } from './partida.js';
 import { ruta, andableCerca } from './rutas.js';
 import { seVe } from './vista.js';
-import { fuentesAmenaza, firmaAmenaza, mapaAmenaza } from './amenaza.js';
+import { amenazaAlDia } from './amenaza.js';
 import { REGLAS as R } from '../data/reglas.js';
 
 const enPie = (u) => u.estado !== 'herido' && u.estado !== 'muerto';
@@ -34,12 +34,12 @@ export function posicionDeTiro(m, x, y, dx, dy, radio = 5, amenaza = null) {
   return best || andableCerca(m, x, y, 'pie');
 }
 
-// el mapa de amenaza del bando, rehecho solo si cambian sus fuentes (contactos o, sin ellos, el despliegue enemigo)
+// el mapa de amenaza del bando (amenaza.js, el mismo que tiene el jugador), rehecho solo si cambian sus fuentes; su
+// versión dice a las escuadras que van de camino si lo que se sabe ha cambiado
 function amenazaDe(p, lado, plan) {
-  const f = fuentesAmenaza(p, lado), firma = firmaAmenaza(f);
-  if (firma !== plan.firma) { plan.firma = firma; plan.amenaza = mapaAmenaza(p.m, f); plan.version = (plan.version || 0) + 1; }
-  p.amenaza[lado] = plan.amenaza;
-  return plan.amenaza;
+  const a = amenazaAlDia(p, lado);
+  plan.version = p.amenazaVersion[lado];
+  return a;
 }
 
 // dónde emboscar al carro enemigo: por dónde se le espera (la ruta más rápida para un carro desde su último contacto,

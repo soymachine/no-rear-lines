@@ -28,11 +28,18 @@ export const REGLAS = {
   // cada punto del despliegue enemigo, y siempre cada punto de su llegada esperada hasta `avance` de su largo, uno cada
   // `rejilla` casillas), cuánto cae a la distancia máxima (lejos), el tope por casilla, cuánto encarece una casilla a
   // la vista (por unidad de amenaza) la ruta de cada orden y hasta dónde se corre el hueco de cada soldado en la
-  // formación buscando la casilla menos vista (hueco casillas; huecoPeso casillas² por unidad de amenaza)
+  // formación buscando la casilla menos vista (hueco casillas; huecoPeso casillas² por unidad de amenaza). Las órdenes
+  // de `cubiertas` van por la ruta cubierta si no dicen otra cosa (las del jugador: MOVER por lo cubierto, CORRER por
+  // lo rápido), y el mapa de cada bando se mira cada `cada` pasos (se rehace solo si cambian sus fuentes)
   amenaza: {
     soldado: 1, carro: 3, despliegue: 0.6, avance: 0.6, rejilla: 4, lejos: 0.5, tope: 3,
-    peso: { mover: 4, correr: 3, carro: 4 }, hueco: 2, huecoPeso: 4,
+    peso: { mover: 4, correr: 3, carro: 4 }, hueco: 2, huecoPeso: 4, cubiertas: ['mover'], cada: 30,
   },
+  // el casco oculto: un carro con una de estas baldosas pegada (a ≤ pegado casillas de su centro) entre él y quien le
+  // dispara solo enseña la torreta (más o menos el 40 % de su silueta de frente): los impactos van todos a la torreta y
+  // la puntería del cañón contra él se multiplica por punteria (provisional: el blanco es menos de la mitad, pero a 100–
+  // 200 m la dispersión del cañón es pequeña y no baja en proporción)
+  casco: { punteria: 0.6, pegado: 1, baldosas: ['seto'] },
   // el mando de la IA (js/sim/ia.js): cada cuántos pasos piensa, dónde busca sus setos (casillas por delante del
   // objetivo y separación entre escuadras), cuánto le importa que su posición de tiro se vea de lejos, y cada cuánto
   // puede rehacer la ruta de una escuadra que va de camino si cambia lo que sabe

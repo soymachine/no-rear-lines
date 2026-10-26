@@ -100,3 +100,11 @@ este proyecto, en `reference/proyecto.md`.)
   se cruzan y atraviesan el campo la una delante de la otra.
 - 2026-10-26 · El shadowcasting no sabe la regla del seto: lo pegado a la fuente se quita de lo opaco, y lo de detrás
   de un seto iluminado se comprueba con `seVe` (si no, los setos vistos de refilón hacen visible la fila de detrás).
+- 2026-10-26 · Para medir un duelo de carros, que no empiecen los dos con la misma recarga: se recorren por id, dispara
+  siempre primero el de id más bajo y el primer impacto suele decidir (salía 80/20 sin ninguna regla de por medio).
+- 2026-10-26 · Esconder el casco manda todos los impactos a la torreta: al carro de torreta flaca (Panzer IV H, 50 mm
+  contra 85 del casco) le puede salir peor. Mira el blindaje de cada carro antes de dar por hecho que ocultarse ayuda.
+- 2026-10-26 · Para probar que un cambio del jugador no toca a la IA, apágalo por datos (p. ej.
+  `REGLAS.amenaza.cubiertas = []`) y compara las huellas con las de antes: iguales en las 20 semillas.
+- 2026-10-26 · El scratchpad de la sesión lo comparten otros agentes (me pisaron un `mide.mjs`): trabaja en una
+  subcarpeta propia.

@@ -20,6 +20,12 @@ Lo que es de este juego, y no del oficio.
   - las bajas (`baja`): herido o muerto según la letalidad, y el golpe a la moral de los suyos;
   - el carro (`carro`, `disparaCañon`, `impactoCarro`, `penetra`): gira sobre las orugas, la torreta sigue al blanco,
     cañón contra carros (perforante, lado por el ángulo, espesor / cos) y explosivo o coaxial contra infantería;
+  - el **casco oculto** (`cascoOculto`, 2026-10-26): un carro con un seto pegado (las casillas que pisa la línea hacia
+    el tirador hasta `REGLAS.casco.pegado` = 1 casilla de su centro, sin la suya) solo enseña la torreta: todos los
+    impactos van a ella y la puntería del cañón contra él ×`REGLAS.casco.punteria` (0,6). Los sucesos `cañonazo`,
+    `penetra` y `rebote` llevan `oculto` (y los dos últimos, `torreta`). Sin alturas: es la regla del bocage (el talud
+    del seto tapa el casco). Un carro en el camino entre setos (`#==#`) está oculto para quien le tira por encima del
+    seto: la IA no lo busca aún;
   - la moral (`moral`): estados con histéresis, recuperación a cubierto y con el jefe cerca, miedo al carro, contagio
     del pánico;
   - el humo por iniciativa propia (`humoIA`) y la victoria (`victoria`).
@@ -28,7 +34,10 @@ Lo que es de este juego, y no del oficio.
   montículo en arrays tipados (mismas rutas que antes, comprobado en 584 peticiones; ~2× más rápido). `suaviza` con
   extra no acepta una recta que cueste más que el trozo de ruta que se salta (si no, la ruta cubierta se acorta por el
   campo a la vista).
-- `js/sim/amenaza.js` (2026-10-26): el mapa de amenaza de un bando. `fuentesAmenaza(p, lado)`: sus contactos (soldado
+- `js/sim/amenaza.js` (2026-10-26): el mapa de amenaza de un bando. `amenazaAlDia(p, lado)` lo rehace solo si cambia
+  la firma de sus fuentes y lo deja en `p.amenaza[lado]` (versión en `p.amenazaVersion[lado]`): lo llaman `paso` (cada
+  `REGLAS.amenaza.cada` = 30 pasos, los dos bandos, el del jugador también), `cumple` (cada orden cubierta, para que salga
+  con lo último que se sabe) y la IA del mando. `fuentesAmenaza(p, lado)`: sus contactos (soldado
   peso 1, carro 3), el despliegue enemigo solo mientras no hay contactos, y siempre la **llegada esperada** (las rutas
   a pie y en carro del despliegue enemigo al objetivo, un punto cada 8 casillas hasta el 60 % de su largo: sale del
   mapa, no es trampa), juntas por bloque de 4×4. `mapaAmenaza(m, fuentes)`: shadowcasting de `fov.js` desde cada
@@ -36,7 +45,7 @@ Lo que es de este juego, y no del oficio.
   comprueba con `seVe`), Σ peso × (1 − 0,5·d/alcance), tope 3. Cifras en `REGLAS.amenaza`.
 - `js/sim/vista.js`: `seVe` con la regla del seto (lo pegado a un extremo no tapa, salvo las casas) y el humo.
 - `js/sim/ia.js`: el mando del bando que defiende (cifras en `REGLAS.ia`). Desde el 2026-10-26:
-  - rehace su mapa de amenaza solo si cambia la firma de sus fuentes (bloques de 4) y lo deja en `p.amenaza[lado]`;
+  - usa el mapa de amenaza del bando (`amenazaAlDia`; su versión le dice si lo que sabe ha cambiado);
   - sus órdenes llevan `cubierta: true`: `cumple` (partida.js) suma a cada casilla `REGLAS.amenaza.peso[orden] ×
     amenaza` (correr 3, mover 4, carro 4) y corre el hueco de formación hasta 2 casillas a la menos vista;
   - cada escuadra, al seto de su lado (ordenadas por su posición a lo ancho del frente: antes se cruzaban), en la
@@ -51,12 +60,27 @@ Lo que es de este juego, y no del oficio.
   - repliegue a la granja de la escuadra que se rompe (≥ 50 % fuera), por la ruta cubierta.
 - `partida.js`, carros: una orden con `mira` deja al carro, parado, con el casco y (sin blanco) la torreta hacia ese
   rumbo. Solo la usa la IA; las órdenes del jugador no la llevan.
+- **Las órdenes del jugador** (2026-10-26): las que no dicen `cubierta` la llevan si su tipo está en
+  `REGLAS.amenaza.cubiertas` (`['mover']`): MOVER (escuadra o carro) va por lo cubierto con el mapa de amenaza de su
+  bando (sus contactos, la llegada esperada y, sin contactos, el despliegue enemigo: nada que no sepa) y CORRER por lo
+  rápido. Lo decide `rutaCubierta` en `cumple`, así que vale igual para el menú y los atajos de `js/ui/juego.js`, para
+  `window.__nrl.ordena`, para el guion (`aplicaGuion`, el que hace de jugador en las pruebas y en `tools/batalla.mjs`) y
+  para el bot. RETIRADA no va cubierta (no tiene peso en `REGLAS.amenaza.peso`).
 - Las cifras: `js/data/reglas.js` (paso, velocidades, vista, detección, supresión, moral, obediencia, humo, victoria),
   `js/data/armas.js` y `js/data/unidades.js`.
 - Pruebas: `node tests/sim.mjs` (determinismo, obediencia, la regla del seto, el humo, la MG que clava a una escuadra
-  al descubierto, el blindaje, el mapa de amenaza y la ruta cubierta en un mapa pequeño, el carro de la IA sin escolta
+  al descubierto, el blindaje, el casco oculto (geometría y duelo), el mapa de amenaza y la ruta cubierta en un mapa
+  pequeño, MOVER cubierto y CORRER directo sin decirlo, la niebla en el mapa del jugador, el carro de la IA sin escolta
   y con ella, tres batallas enteras). Una batalla para mirarla: `node tools/batalla.mjs --semilla N`.
-- Rendimiento (2026-10-26): 0,11–0,12 ms por paso de media con 40 soldados y 2 carros; picos de 7–10 ms en el paso en
+- **El duelo de carros** (`tools/duelo.mjs`, 2026-10-26): un carro parado y pegado a un seto (el oculto) contra el otro,
+  con la regla del casco oculto y sin ella (la misma batalla con `REGLAS.casco.baldosas = []`), muchas semillas por caso:
+  `node tools/duelo.mjs [--n 400] [--d 15,30,50] [--geo frente,flanco,cruza] [--oculto panzer4,sherman]` (~1 min con
+  400). `frente`/`flanco`: los dos parados y apuntados, cada uno en un punto de su recarga (azar aparte, con la semilla;
+  si no, dispara primero el de id más bajo y el primer tiro decide); `cruza`: el otro pasa corriendo de lado a d
+  casillas, con la torreta hacia delante (la emboscada). `duelos(caso, n)` se exporta para las pruebas.
+- Rendimiento, con la ruta cubierta del jugador (2026-10-26): 0,13 ms por paso de media (antes 0,10), 61 pasos de más
+  de 5 ms de 36 000 (antes 43 de 50 000), pico ~23 ms; el mapa del jugador se rehace cuando cambian sus contactos.
+- Rendimiento (2026-10-26, antes de lo anterior): 0,11–0,12 ms por paso de media con 40 soldados y 2 carros; picos de 7–10 ms en el paso en
   que sale la orden cubierta de una escuadra (10 A* con coste de exposición, ~0,65 ms cada uno: el contorno de coste
   abre casi todo el mapa) y de 2–15 ms al rehacer el mapa de amenaza o la emboscada. El arreglo de fondo (una ruta por
   escuadra o un campo de flujo por orden) es del code-expert.
@@ -76,6 +100,46 @@ Lo que es de este juego, y no del oficio.
 El guion de prueba manda al americano contra la línea alemana a los 120 y 240 s: casi todas las batallas acaban
 entonces. Con solo la primera orden (`tests/sim.mjs`) llegan a los 900 s.
 
+### MOVER cubierto para el jugador y casco oculto (2026-10-26, `tools/batalla.mjs`, semillas 1–20 y 1–60)
+
+| | antes | después |
+|---|---|---|
+| duración media (1–20 / 1–60) | 250 s / 208 s | 180 s / 169 s |
+| gana EE. UU. / Alemania (1–20) | 8 / 12 | 10 / 10 |
+| gana EE. UU. / Alemania (1–60) | 31 / 29 | 34 / 26 |
+| bajas EE. UU. / Alemania (1–20) | 10,1 / 9,4 | 8,6 / 9,7 |
+| orden de los 120 s, escuadra us0: amenaza media por casilla de su ruta (en su mapa) | 1,73 | 0,67 (ruta un 22 % más larga) |
+| orden de los 120 s, us0: tiempo en ruta a la vista del alemán | 24 % | 7 % |
+| orden de los 240 s, us0: amenaza media por casilla | 0,51 | 0,06 |
+| primer contacto | 78 s | 78 s |
+
+- Con `REGLAS.amenaza.cubiertas = []` las 20 huellas son las de antes: la IA alemana no cambia nada (el mapa al día en
+  `paso` y en `cumple` le da lo mismo) y todo lo de la tabla es la ruta cubierta del jugador.
+- El casco oculto no cambia ninguna de esas 20 batallas (huellas iguales con la regla y sin ella): en el guion no hay
+  duelo de carros. Con el Sherman metido en la granja a los 200 s (sin fin por rotura), el Panzer gana 6 de 20 (sin la
+  regla, 7) y sus 12 cañonazos al Sherman van todos contra casco oculto: el Sherman entra por el camino entre setos.
+
+### El duelo de carros con casco oculto (`node tools/duelo.mjs --n 400`, puntería ×0,6, 2026-10-26)
+
+Gana el oculto, con la regla / sin ella (de frente y de flanco salen iguales: con el casco oculto, solo cuenta la
+torreta, que ya apunta al enemigo):
+
+| oculto | geometría | 15 casillas | 30 | 50 |
+|---|---|---|---|---|
+| Panzer IV | frente o flanco | 70 % / 51 % | 68 % / 52 % | 67 % / 79 % (frente), 51 % (flanco) |
+| Panzer IV | cruza (le pasa el Sherman de lado) | 66 % / 69 % | 61 % / 59 % | 57 % / 59 % |
+| Sherman | frente o flanco | 74 % / 56 % | 71 % / 55 % | 34 % / 23 % |
+| Sherman | cruza | 64 % / 61 % | 59 % / 56 % | 55 % / 53 % |
+
+- En el duelo igualado (los dos apuntados), la regla sube al oculto de ~53 % a ~70 %.
+- **El Panzer IV oculto pierde a 50 casillas de frente** (79 % → 67 %): con el casco oculto todos los impactos van a la
+  torreta (50 mm de frente), que el 75 mm del Sherman perfora, y no al casco (85 mm), que a 200 m ya no. Es histórico (la
+  torreta era el punto flaco del IV H), pero el jugador lo verá al revés de lo que espera.
+- En `cruza`, el emboscado gana casi lo mismo con la regla y sin ella: decide estar parado y ya apuntado; la regla le
+  quita al que pasa un tercio de sus victorias contra el Sherman (19 % → 12 %) y para el Panzer va y viene (7 → 15 % a
+  15 casillas, 19 → 15 % a 30) por lo mismo de su torreta.
+- Los duelos se deciden en 1–2 disparos (7–16 s): el primer impacto suele matar.
+
 ## Lo que falta o no convence (2026-10-26)
 
 - ~~El alemán se mete en el pasillo del camino~~ y ~~el duelo de carros se decide en 12–20 s~~: arreglado el
@@ -87,8 +151,16 @@ entonces. Con solo la primera orden (`tests/sim.mjs`) llegan a los 900 s.
   huecos del seto (filas 15–16 y 25–27); el hueco cubierto solo se corre 2 casillas.
 - **El mapa de amenaza usa la última posición de los contactos** (niebla): un americano que avanza sin que se le vea
   no cuenta hasta que se le ve. La llegada esperada lo suaviza, sin hacer trampa.
-- **No hay casco oculto de verdad**: sin alturas, un carro pegado a un seto se ve entero. La emboscada vale por ver de
-  flanco, estar parado y con la torreta ya apuntada.
+- ~~No hay casco oculto~~: desde el 2026-10-26, la regla del seto pegado (`REGLAS.casco`). Cifras provisionales para el
+  game-designer: puntería ×0,6 constante (quizá debería depender de la distancia: cerca, el blanco pequeño casi no
+  importa) y sin efecto en la detección (un casco oculto se ve igual de pronto).
+- **La emboscada del Panzer no busca el casco oculto** (en (71, 33) no tiene el seto entre él y la llegada); el Sherman,
+  en cambio, lo tiene gratis en el camino entre setos. Y para el Panzer IV el casco oculto es arma de doble filo (su
+  torreta de 50 mm).
+- **La ruta cubierta del jugador depende de que recuerde**: los contactos se olvidan a los 30 s, y en la orden de los
+  120 s del guion el americano a menudo ya no recuerda la MG que vio a los 78 s: su mapa vuelve al despliegue y la
+  llegada esperada del alemán.
+- RETIRADA no va cubierta (ni la del jugador ni la de la IA, que se repliega con MOVER).
 - **Las batallas del guion siguen acabando antes de los 15 min**, porque el guion empuja al americano contra la MG.
 - El mapa de amenaza no tiene en cuenta el humo.
 - Fallo visto (no arreglado): en `fuego()` una ráfaga sigue tirando contra un blanco que ya cayó en esa misma ráfaga,
@@ -118,6 +190,19 @@ entonces. Con solo la primera orden (`tests/sim.mjs`) llegan a los 900 s.
 
 - **El prototipo empieza por la simulación en Node**: mapa, unidades, pasos fijos, línea de visión, supresión y moral,
   con pruebas deterministas. Enseguida, un dibujo mínimo encima para verla moverse.
+
+## Decisiones (quinta ronda, 2026-10-26)
+
+- **P32**: la llegada esperada del enemigo cuenta **siempre** en el mapa de amenaza, haya o no contactos (sale del mapa:
+  no es trampa).
+- **P33**: **casco oculto**. Con un seto pegado entre el carro y quien le dispara, los impactos van solo a la torreta y
+  la puntería contra él baja (`REGLAS.casco`). Las cifras son provisionales: las revisa el game-designer con
+  `tools/duelo.mjs`.
+- **P34**: el Panzer emboscado **se queda así de duro** por ahora; el game-designer lo revisará cuando el jugador pueda
+  escoltar su carro.
+- **P35**: las órdenes del jugador usan la ruta cubierta: **MOVER por lo cubierto** (con el mapa de amenaza de sus
+  propios contactos, niebla de guerra) y **CORRER por lo rápido**. El bando del jugador tiene su `p.amenaza` al día igual
+  que el de la IA, rehecho solo cuando cambian sus contactos.
 
 ## Decisiones (cuarta ronda, 2026-10-26)
 
