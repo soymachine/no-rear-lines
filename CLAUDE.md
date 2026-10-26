@@ -117,6 +117,9 @@ Flujo:
   sesión.
 - **Pruebas**: `tests/arnes.cjs` (servidor propio, semilla fija) y `node tests/todas.mjs` (toda la batería), cuando
   haya una página que probar. Ver la cabecera de cada uno.
+- **Vídeo en cada prueba del juego**: cuando se prueba el juego, se graba un vídeo de un par de minutos para que el
+  usuario vea el aspecto y la sensación (`node tools/video.mjs --salida <scratchpad>/video/<nombre>.mp4`) y se le
+  envía con SendUserFile. El vídeo va al scratchpad, nunca al repo.
 
 ## Lo que no entra en este repo
 
