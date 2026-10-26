@@ -2,14 +2,14 @@
 // y un carro por bando, una cortina de humo y fuego de ametralladora. Sirve para decidir la resolución de dibujo, el
 // tamaño de la baldosa y el de las unidades. Todo sale de raster.js, se pinta una vez en hojas (OffscreenCanvas) y se
 // amplía ×N entero sin suavizar, como en el juego.
-// Parámetros (?…): baldosa=8 (px por baldosa de 4 m) · res=640x360 (resolución de dibujo) · x=N (aumento; por defecto,
+// Parámetros (?…): baldosa=8 (px por baldosa de 4 m) · res=960x540 (resolución de dibujo) · x=N (aumento; por defecto,
 // el mayor entero que cabe) · vista=escena|mapa|hojas · marcas=0 (sin marcador de bando) · semilla=1944
 import { model, rasterize, box, ell, cap, poly, fuse, sEll, sCap, hash, hex, mix } from '../../js/ui/raster.js';
 import { RNG } from '../../js/util/rng.js';
 
 const Q = new URLSearchParams(location.search);
 const T = +Q.get('baldosa') || 8, k = T / 8; // k: escala de las unidades respecto a la propuesta (baldosa de 8 px)
-const [RW, RH] = (Q.get('res') || '640x360').split('x').map(Number);
+const [RW, RH] = (Q.get('res') || '960x540').split('x').map(Number);
 const VISTA = Q.get('vista') || 'escena', MARCAS = Q.get('marcas') !== '0', SEM = +Q.get('semilla') || 1944;
 const PXM = T / 4; // píxeles por metro
 

@@ -10,8 +10,9 @@ _Vacío por ahora: aún no hay mapas._ Aquí irá lo que es de este juego, y no 
 
 ## Decisiones (2026-10-26)
 
-- **Mapas grandes**, hechos a mano, que se recorren con desplazamiento. El tamaño exacto, tras las pruebas visuales.
-- **El mapa del prototipo** (para probar ahora): unas 128×72 casillas de 4 m con cinco baldosas:
+- **Mapas grandes**, hechos a mano, que se recorren con desplazamiento: el objetivo es **1×1 km** (250×250 casillas),
+  como el de `prototipos/escala/`. En la vista normal (960×540 ×2) se ven 480×270 m, unas 2×4 pantallas por mapa.
+- **El mapa del prototipo** (el primero): 128×72 casillas de 4 m (512×288 m) con cinco baldosas:
   - campo;
   - seto: tapa la vista, cubre poco y frena al carro;
   - camino;

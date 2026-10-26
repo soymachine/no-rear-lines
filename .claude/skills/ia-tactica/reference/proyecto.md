@@ -19,3 +19,11 @@ _Vacío por ahora: aún no hay simulación._ Aquí irá lo que es de este juego,
   la vista; retirarse y esconderse, casi nunca. Heroico y rendirse, más adelante. **Se tiene que sentir realista.**
 - **Granadas de humo** en el prototipo: tapan la vista mientras dura la cortina.
 - Prototipo: dos escuadras y un carro por bando, EE. UU. contra Alemania.
+
+## Decisiones (segunda ronda, 2026-10-26)
+
+- **El tiempo va siempre a 1:1**: ni se acelera ni se ralentiza.
+- **El menú (Esc) detiene la partida** para salir o guardar, pero con él abierto no se pueden dar órdenes: no es una
+  pausa táctica.
+- **Granadas de humo**: las lanza el jugador con la orden HUMO, y también la IA por su cuenta en lo obvio, cuando una
+  escuadra se retira o tiene que cruzar al descubierto bajo fuego.

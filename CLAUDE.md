@@ -18,7 +18,8 @@ La guerrilla no tiene frente: el enemigo puede estar detrás de cualquier seto.
 Mandan sobre cualquier propuesta. Cambiarlas es una decisión del usuario.
 
 1. **La simulación va en pasos fijos y no toca el DOM ni el canvas.** Avanza en pasos de duración fija (por ejemplo,
-   10 por segundo) con un acumulador. **No hay pausa táctica**: el tiempo no se para para mandar. Las órdenes del
+   10 por segundo) con un acumulador. **No hay pausa táctica**: el tiempo va siempre a 1:1 y no se para para
+   mandar (el menú detiene la partida, pero con él abierto no se dan órdenes). Las órdenes del
    jugador se encolan y entran al principio del paso siguiente. La simulación no importa nada del DOM, del canvas ni del audio: emite **sucesos**
    (disparo, impacto, unidad suprimida…) que el dibujo y el sonido leen después. Así corre en Node, en un worker o
    deprisa para el bot de playtest.
